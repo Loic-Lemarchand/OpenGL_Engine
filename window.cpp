@@ -1,13 +1,12 @@
 #include "window.h"
 #include "utilities.h"
 
-
-
-#include <iostream>
+float  Window::triOffset = 0.0f;
+float  Window::triIncrement = 0.0f;
 
 Window::Window(int width, int height, const char* title) : bIsValid(true), myWindow(nullptr), myErrorCode(0)
 {
-	
+	triIncrement = 0.0f;
 	//glfwInitHint(GLFW_ANGLE_PLATFORM_TYPE, GLFW_ANGLE_PLATFORM_TYPE_OPENGL);
 	glfwSetErrorCallback(Window::errorCallback);
 
@@ -63,6 +62,11 @@ void Window::update()
 {
 	glfwPollEvents();
 	glfwSwapBuffers(myWindow);
+
+	if (!(abs(triOffset + triIncrement) > triMaxOffset))
+	{
+		triOffset += triIncrement;
+	}
 }
 
 Window::~Window()
@@ -89,6 +93,29 @@ void Window::key_callback(GLFWwindow* window, int key, int scancode, int action,
 	{
 		utilities::log("Escape pressed");
 		glfwSetWindowShouldClose(window, GLFW_TRUE);
+	}
+
+	if (key == GLFW_KEY_RIGHT)
+	{
+		if (action == GLFW_PRESS || action == GLFW_REPEAT)
+		{
+			triIncrement = 0.005f;
+		}
+		else if (action == GLFW_RELEASE)
+		{
+			triIncrement = 0.0f;
+		}
+	}
+	if (key == GLFW_KEY_LEFT)
+	{
+		if (action == GLFW_PRESS || action == GLFW_REPEAT)
+		{
+			triIncrement = -0.005f;
+		}
+		else if (action == GLFW_RELEASE)
+		{
+			triIncrement = 0.0f;
+		}
 	}
 }
 

@@ -7,5 +7,5 @@
 namespace utilities
 {
 	void log(const std::string& text);
-	
+
 }

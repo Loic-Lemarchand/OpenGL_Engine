@@ -3,6 +3,8 @@
 
 #include "GLFW/glfw3.h"
 
+#define triMaxOffset 0.7f
+
 class Window
 {
 public:
@@ -18,12 +20,16 @@ public:
 
 	//It's okay to be public since not read internally
 	bool bIsValid;
+	static float triOffset;
 
 private:
 
 	GLFWwindow* myWindow;
 
 	int myErrorCode;
+
+	
+	static float triIncrement;
 
 
 	//callback functions

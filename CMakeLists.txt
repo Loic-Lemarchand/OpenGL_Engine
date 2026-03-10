@@ -10,6 +10,7 @@ set(CMAKE_CXX_EXTENSIONS OFF)
 find_package(OpenGL REQUIRED)
 find_package(glfw3 CONFIG REQUIRED)
 find_package(glad CONFIG REQUIRED)
+find_package(glm CONFIG REQUIRED)
 
 # ---- Executable ----
 add_executable(${PROJECT_NAME}
@@ -33,6 +34,7 @@ target_link_libraries(${PROJECT_NAME}
         OpenGL::GL
         glfw
         glad::glad
+        glm::glm
 )
 
 # ---- Include dirs ----

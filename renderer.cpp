@@ -1,6 +1,9 @@
 
 #include "renderer.h"
 
+#include <glm/gtc/matrix_transform.hpp>
+#include <glm/gtc/type_ptr.hpp>
+
 Renderer::Renderer() : bIsValid(true)
 {
 	createBuffers();
@@ -24,56 +27,36 @@ void Renderer::createBuffers()
 	glBindBuffer(GL_ARRAY_BUFFER, myVBO);
 	glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
 
-	unsigned int vertexShader;
-	vertexShader = glCreateShader(GL_VERTEX_SHADER);
-	glShaderSource(vertexShader, 1, &vertexShaderSource, NULL);
-	glCompileShader(vertexShader);
-
-
 	//Check compilation success
 	int success;
 	char infoLog[512];
-	glGetShaderiv(vertexShader, GL_COMPILE_STATUS, &success);
-	if (!success)
-	{
-		glGetShaderInfoLog(vertexShader, 512, NULL, infoLog);
-		utilities::log("Failed to compile vertex shader : " + std::string(infoLog));
-		bIsValid = false;
-		return;
-	}
-
-
-	unsigned int fragmentShader;
-	fragmentShader = glCreateShader(GL_FRAGMENT_SHADER);
-	glShaderSource(fragmentShader, 1, &fragmentShaderSource, NULL);
-	glCompileShader(fragmentShader);
-
-	glGetShaderiv(fragmentShader, GL_COMPILE_STATUS, &success);
-	if (!success)
-	{
-		glGetShaderInfoLog(fragmentShader, 512, NULL, infoLog);
-		utilities::log("Failed to compile fragment shader : " + std::string(infoLog));
-		bIsValid = false;
-		return;
-	}
-	
-
-	//Link both shaders in the shader program
-
 	myShaderProgram = glCreateProgram();
 
-	glAttachShader(myShaderProgram, vertexShader);
-	glAttachShader(myShaderProgram, fragmentShader);
+	GLuint vertexShader = AddShader(vertexShaderSource, GL_VERTEX_SHADER);
+	GLuint fragmentShader = AddShader(fragmentShaderSource, GL_FRAGMENT_SHADER);
+
 	glLinkProgram(myShaderProgram);
 
 	glGetProgramiv(myShaderProgram, GL_LINK_STATUS, &success);
 	if (!success)
 	{
-		glGetProgramInfoLog(myShaderProgram, 512, NULL, infoLog);
+		glGetProgramInfoLog(myShaderProgram, sizeof(infoLog), NULL, infoLog);
 		utilities::log("Failed to link program : " + std::string(infoLog));
 		bIsValid = false;
 		return;
 	}
+
+	glValidateProgram(myShaderProgram);
+	glGetProgramiv(myShaderProgram, GL_VALIDATE_STATUS, &success);
+	if (!success)
+	{
+		glGetProgramInfoLog(myShaderProgram, sizeof(infoLog), NULL, infoLog);
+		utilities::log("Error Validating program : " + std::string(infoLog));
+		bIsValid = false;
+		return;
+	}
+
+	myUniformModel = glGetUniformLocation(myShaderProgram, "model");
 	
 
 	glDeleteShader(vertexShader);
@@ -94,12 +77,47 @@ void Renderer::createBuffers()
 	utilities::log("Successfully created renderer");
 }
 
-void Renderer::update()
+GLuint Renderer::AddShader(const char* shaderCode, GLenum shaderType)
+{
+	GLuint shader = glCreateShader(shaderType);
+
+	const GLchar* theCode[1];
+	theCode[0] = shaderCode;
+
+	GLint codeLength[1];
+	codeLength[0] = strlen(shaderCode);
+
+	glShaderSource(shader, 1, theCode, codeLength);
+	glCompileShader(shader);
+
+	GLint result = 0;
+	GLchar eLog[1024] = { 0 };
+
+	glGetShaderiv(shader, GL_COMPILE_STATUS, &result);
+	if (!result)
+	{
+		glGetShaderInfoLog(shader, sizeof(eLog), NULL, eLog);
+		utilities::log("Error compiling" + std::to_string(shaderType) + " : " + eLog);
+		bIsValid = false;
+		return -1;
+	}
+
+	glAttachShader(myShaderProgram, shader);
+
+	return shader;
+}
+
+void Renderer::update(glm::vec3 translation)
 {
 	glClearColor(0.10f, 0.12f, 0.18f, 1.0f);
 	glClear(GL_COLOR_BUFFER_BIT);
 
 	glUseProgram(myShaderProgram);
+
+		glm::mat4 model{ 1.0f };
+		model = glm::translate(model, translation);
+
+		glUniformMatrix4fv(myUniformModel, 1, GL_FALSE, glm::value_ptr(model));
 
 		glBindVertexArray(myVAO);
 	

@@ -28,7 +28,7 @@ int main(int argc, char* argv[])
 
 		//RENDERER WORK HERE
 
-		renderer->update();
+		renderer->update(glm::vec3(window->triOffset, 0.0f, 0.0f));
 
 
 		//PHYSICS COMPUTATION HERE
