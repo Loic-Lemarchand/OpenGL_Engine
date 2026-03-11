@@ -1,8 +1,11 @@
 
 #include "renderer.h"
+#include "shader.h"
 
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/type_ptr.hpp>
+
+float toRadians = 3.14159265 / 180.0f;
 
 Renderer::Renderer() : bIsValid(true)
 {
@@ -27,40 +30,19 @@ void Renderer::createBuffers()
 	glBindBuffer(GL_ARRAY_BUFFER, myVBO);
 	glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
 
-	//Check compilation success
-	int success;
-	char infoLog[512];
-	myShaderProgram = glCreateProgram();
+	myShader = std::make_unique<Shader>("D:/Dev/ProjetOpengl/vertexShader.glsl", "D:/Dev/ProjetOpengl/fragmentShader.glsl");
 
-	GLuint vertexShader = AddShader(vertexShaderSource, GL_VERTEX_SHADER);
-	GLuint fragmentShader = AddShader(fragmentShaderSource, GL_FRAGMENT_SHADER);
-
-	glLinkProgram(myShaderProgram);
-
-	glGetProgramiv(myShaderProgram, GL_LINK_STATUS, &success);
-	if (!success)
+	// Ensure shader is valid before getting uniform location
+	if (myShader && myShader->bIsValid)
 	{
-		glGetProgramInfoLog(myShaderProgram, sizeof(infoLog), NULL, infoLog);
-		utilities::log("Failed to link program : " + std::string(infoLog));
-		bIsValid = false;
-		return;
+		myUniformModel = glGetUniformLocation(myShader->myProgramID, "model");
 	}
-
-	glValidateProgram(myShaderProgram);
-	glGetProgramiv(myShaderProgram, GL_VALIDATE_STATUS, &success);
-	if (!success)
+	else
 	{
-		glGetProgramInfoLog(myShaderProgram, sizeof(infoLog), NULL, infoLog);
-		utilities::log("Error Validating program : " + std::string(infoLog));
-		bIsValid = false;
-		return;
+		utilities::log("Shader is invalid, cannot get uniform location");
+		myUniformModel = -1;
 	}
-
-	myUniformModel = glGetUniformLocation(myShaderProgram, "model");
 	
-
-	glDeleteShader(vertexShader);
-	glDeleteShader(fragmentShader);
 
 	//p1 : location is 0 in the vertex shader so it is 0
 	//p2 : 3 because of vec3
@@ -77,45 +59,19 @@ void Renderer::createBuffers()
 	utilities::log("Successfully created renderer");
 }
 
-GLuint Renderer::AddShader(const char* shaderCode, GLenum shaderType)
-{
-	GLuint shader = glCreateShader(shaderType);
 
-	const GLchar* theCode[1];
-	theCode[0] = shaderCode;
-
-	GLint codeLength[1];
-	codeLength[0] = strlen(shaderCode);
-
-	glShaderSource(shader, 1, theCode, codeLength);
-	glCompileShader(shader);
-
-	GLint result = 0;
-	GLchar eLog[1024] = { 0 };
-
-	glGetShaderiv(shader, GL_COMPILE_STATUS, &result);
-	if (!result)
-	{
-		glGetShaderInfoLog(shader, sizeof(eLog), NULL, eLog);
-		utilities::log("Error compiling" + std::to_string(shaderType) + " : " + eLog);
-		bIsValid = false;
-		return -1;
-	}
-
-	glAttachShader(myShaderProgram, shader);
-
-	return shader;
-}
-
-void Renderer::update(glm::vec3 translation)
+void Renderer::update(glm::vec3 translation, float rotation, glm::vec3 rotationAxe, glm::vec3 scale)
 {
 	glClearColor(0.10f, 0.12f, 0.18f, 1.0f);
 	glClear(GL_COLOR_BUFFER_BIT);
 
-	glUseProgram(myShaderProgram);
+	//glUseProgram(myShaderProgram);
+	myShader->use();
 
 		glm::mat4 model{ 1.0f };
 		model = glm::translate(model, translation);
+		model = glm::rotate(model, rotation * toRadians, rotationAxe);
+		model = glm::scale(model, scale);
 
 		glUniformMatrix4fv(myUniformModel, 1, GL_FALSE, glm::value_ptr(model));
 

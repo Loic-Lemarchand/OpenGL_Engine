@@ -5,6 +5,7 @@
 
 #define triMaxOffset 0.7f
 
+
 class Window
 {
 public:
