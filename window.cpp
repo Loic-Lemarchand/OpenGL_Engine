@@ -1,10 +1,17 @@
 #include "window.h"
+
 #include "utilities.h"
 
 float  Window::triOffset = 0.0f;
 float  Window::triIncrement = 0.0f;
 
-Window::Window(int width, int height, const char* title) : bIsValid(true), myWindow(nullptr), myErrorCode(0)
+Window::Window(int width, int height, const char* title, InputManager& inputManager) :
+	bIsValid(true),
+	myWindow(nullptr),
+	myErrorCode(0),
+	myInputManager(inputManager),
+	myFrameBufferHeight(0),
+	myFrameBufferWidth(0)
 {
 	triIncrement = 0.0f;
 	//glfwInitHint(GLFW_ANGLE_PLATFORM_TYPE, GLFW_ANGLE_PLATFORM_TYPE_OPENGL);
@@ -46,9 +53,9 @@ Window::Window(int width, int height, const char* title) : bIsValid(true), myWin
 	glfwSetKeyCallback(myWindow, Window::key_callback);
 
 	//pass the size of glfw window to opengl (the viewport takes the whole frame buffer)
-	int frameBufferWidth, frameBufferHeight;
-	glfwGetFramebufferSize(myWindow, &frameBufferWidth, &frameBufferHeight);
-	glViewport(0, 0, frameBufferWidth, frameBufferHeight);
+	
+	glfwGetFramebufferSize(myWindow, &myFrameBufferWidth, &myFrameBufferHeight);
+	glViewport(0, 0, myFrameBufferWidth, myFrameBufferHeight);
 
 	glfwSetFramebufferSizeCallback(myWindow, framebuffer_size_callback);
 
@@ -56,6 +63,28 @@ Window::Window(int width, int height, const char* title) : bIsValid(true), myWin
 	glfwSwapInterval(1);
 
 	utilities::log("Successfully created window");
+
+	glfwSetWindowUserPointer(myWindow, this);
+	auto& eventBus = myInputManager.getEventBus();
+	eventBus.subscribe(EventDispatcher::EventType::KeyPressed,
+		[this](const EventDispatcher::Event& e)
+		{
+			const KeyPressedEvent& key = static_cast<const KeyPressedEvent&>(e);
+
+			if (key.getKey() == GLFW_KEY_ESCAPE)
+				quitWindow();
+			else if (key.getKey() == GLFW_KEY_LEFT)
+				rotateLeft();
+			else if (key.getKey() == GLFW_KEY_RIGHT)
+				rotateRight();
+		});
+
+	eventBus.subscribe(EventDispatcher::EventType::KeyReleased,
+		[this](const EventDispatcher::Event& e)
+		{
+			const KeyReleasedEvent& key = static_cast<const KeyReleasedEvent&>(e);
+			triIncrement = 0;
+		});
 }
 
 void Window::update()
@@ -63,7 +92,7 @@ void Window::update()
 	glfwPollEvents();
 	glfwSwapBuffers(myWindow);
 
-	if (!(abs(triOffset + triIncrement) > triMaxOffset))
+	//if(!(abs(triOffset + triIncrement) > triMaxOffset))
 	{
 		triOffset += triIncrement;
 	}
@@ -89,34 +118,14 @@ void Window::errorCallback(int code, const char* description)
 
 void Window::key_callback(GLFWwindow* window, int key, int scancode, int action, int mods)
 {
-	if (key == GLFW_KEY_ESCAPE && action == GLFW_PRESS)
+	Window* win = static_cast<Window*>(glfwGetWindowUserPointer(window));
+	if (!win)
 	{
-		utilities::log("Escape pressed");
-		glfwSetWindowShouldClose(window, GLFW_TRUE);
+		utilities::log("Couldn't get window instance");
+		return;
 	}
-
-	if (key == GLFW_KEY_RIGHT)
-	{
-		if (action == GLFW_PRESS || action == GLFW_REPEAT)
-		{
-			triIncrement = 0.005f;
-		}
-		else if (action == GLFW_RELEASE)
-		{
-			triIncrement = 0.0f;
-		}
-	}
-	if (key == GLFW_KEY_LEFT)
-	{
-		if (action == GLFW_PRESS || action == GLFW_REPEAT)
-		{
-			triIncrement = -0.005f;
-		}
-		else if (action == GLFW_RELEASE)
-		{
-			triIncrement = 0.0f;
-		}
-	}
+		
+	win->myInputManager.processKey(key, action);
 }
 
 void Window::framebuffer_size_callback(GLFWwindow* window, int width, int height)

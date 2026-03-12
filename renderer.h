@@ -16,9 +16,18 @@
 	-0.5f, 0.5f, 0.0f
 };*/
 
+static int indices[] =
+{
+	0, 3, 1,
+	1, 3, 2,
+	2, 3, 0,
+	0, 1, 2
+};
+
 static float vertices[] =
 {
 	-1.0f, -1.0f, 0.0f,
+	0.0f, -1.0f, 1.0f,
 	1.0f, -1.0f, 0.0f,
 	0.0f, 1.0f, 0.0f
 };
@@ -28,7 +37,8 @@ class Shader;
 class Renderer
 {
 public:
-	Renderer();
+	Renderer() = delete;
+	Renderer(int frameBufferWidth, int frameBufferHeight);
 	~Renderer();
 
 	void update(glm::vec3 translation, float rotation, glm::vec3 rotationAxe, glm::vec3 scale);
@@ -41,11 +51,13 @@ private:
 
 	void createBuffers();
 
-	GLuint AddShader(const char* shaderCode, GLenum shaderType);
-
 	unsigned int myVAO;
 	unsigned int myVBO;
+	unsigned int myIBO;
 	unsigned int myShaderProgram;
 
+	glm::mat4 myProjection;
+
 	GLuint myUniformModel;
+	GLuint myUniformProjection;
 };

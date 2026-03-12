@@ -20,12 +20,16 @@ add_executable(${PROJECT_NAME}
     shader.cpp
 
     utilities.cpp
+    inputManager.cpp
+    eventBus.cpp
 
     window.h
     renderer.h
     shader.h
 
     utilities.h
+    inputManager.h
+    eventBus.h
 )
 
 # ---- Linking ----
