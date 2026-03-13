@@ -8,6 +8,7 @@ public:
 	InputManager(EventDispatcher::EventBus& eventBus);
 
 	void processKey(int key, int action);
+	void processMouse(double xPos, double yPos);
 
 	EventDispatcher::EventBus& getEventBus() { return myEventBus; }
 

@@ -1,4 +1,5 @@
 #include "inputManager.h"
+#include "utilities.h"
 #include <GLFW/glfw3.h>
 
 
@@ -19,4 +20,9 @@ void InputManager::processKey(int key, int action)
 		//myEventBus.pushEvent(std::make_unique<KeyReleasedEvent>(key));
 		myEventBus.pushEvent(EventDispatcher::makeEvent(EventDispatcher::EventType::KeyReleased, "ReleasedKey : " + std::to_string(key), key));
 	}
+}
+
+void InputManager::processMouse(double xPos, double yPos)
+{
+	myEventBus.pushEvent(EventDispatcher::makeEvent(EventDispatcher::EventType::MouseMoved, "Moved mouse", xPos, yPos));
 }

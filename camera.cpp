@@ -1,4 +1,5 @@
 #include "camera.h"
+#include "utilities.h"
 
 Camera::Camera(glm::vec3 startPosition, glm::vec3 startUp, GLfloat startYaw, GLfloat startPitch, GLfloat setMovementSpeed, GLfloat setTurnSpeed) :
 	position(startPosition),
@@ -21,5 +22,5 @@ Camera::~Camera()
 
 void Camera::update()
 {
-
+	
 }

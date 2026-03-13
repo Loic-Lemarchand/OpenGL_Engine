@@ -5,6 +5,21 @@
 float  Window::triOffset = 0.0f;
 float  Window::triIncrement = 0.0f;
 
+//functions
+Window* getWindowInstance(GLFWwindow* window)
+{
+	Window* win = static_cast<Window*>(glfwGetWindowUserPointer(window));
+	if (!win)
+	{
+		utilities::log("Couldn't get window instance");
+		return nullptr;
+	}
+	return win;
+}
+
+
+//Member functions
+
 Window::Window(int width, int height, const char* title, InputManager& inputManager) :
 	bIsValid(true),
 	myWindow(nullptr),
@@ -52,6 +67,9 @@ Window::Window(int width, int height, const char* title, InputManager& inputMana
 
 	glfwSetKeyCallback(myWindow, Window::key_callback);
 
+	glfwSetInputMode(myWindow, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
+	glfwSetCursorPosCallback(myWindow, Window::HandleMouse);
+
 	//pass the size of glfw window to opengl (the viewport takes the whole frame buffer)
 	
 	glfwGetFramebufferSize(myWindow, &myFrameBufferWidth, &myFrameBufferHeight);
@@ -95,6 +113,8 @@ Window::Window(int width, int height, const char* title, InputManager& inputMana
 			{
 				mouseLastX = key.get<0>();
 				mouseLastY = key.get<1>();
+
+				utilities::log("xPos: " + std::to_string((int)mouseLastX) + "  yPos: " + std::to_string((int)mouseLastY));
 			}
 		});
 }
@@ -142,11 +162,16 @@ void Window::key_callback(GLFWwindow* window, int key, int scancode, int action,
 
 void Window::HandleMouse(GLFWwindow* window, double xPos, double yPos)
 {
-
+	if (Window* win = getWindowInstance(window))
+	{
+		win->myInputManager.processMouse(xPos, yPos);
+	}
 }
 
 void Window::framebuffer_size_callback(GLFWwindow* window, int width, int height)
 {
 	glViewport(0, 0, width, height);
 }
+
+
 
