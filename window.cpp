@@ -58,7 +58,6 @@ Window::Window(int width, int height, const char* title, InputManager& inputMana
 	glViewport(0, 0, myFrameBufferWidth, myFrameBufferHeight);
 
 	glfwSetFramebufferSizeCallback(myWindow, framebuffer_size_callback);
-
 	
 	glfwSwapInterval(1);
 
@@ -73,18 +72,18 @@ Window::Window(int width, int height, const char* title, InputManager& inputMana
 		{
 			const KeyPressedEvent& key = static_cast<const KeyPressedEvent&>(e);
 
-			if (key.getKey() == GLFW_KEY_ESCAPE)
+			if (key.get<0>() == GLFW_KEY_ESCAPE)
 				quitWindow();
-			else if (key.getKey() == GLFW_KEY_LEFT)
+			else if (key.get<0>() == GLFW_KEY_LEFT)
 				rotateLeft();
-			else if (key.getKey() == GLFW_KEY_RIGHT)
+			else if (key.get<0>() == GLFW_KEY_RIGHT)
 				rotateRight();
 		});
 
 	eventBus.subscribe(EventDispatcher::EventType::KeyReleased,
 		[this](const EventDispatcher::Event& e)
 		{
-			const KeyReleasedEvent& key = static_cast<const KeyReleasedEvent&>(e);
+			//const KeyReleasedEvent& key = static_cast<const KeyReleasedEvent&>(e);
 			triIncrement = 0;
 		});
 
@@ -94,8 +93,8 @@ Window::Window(int width, int height, const char* title, InputManager& inputMana
 			const MouseEvent& key = static_cast<const MouseEvent&>(e);
 			if (mouseFirstMoved)
 			{
-				mouseLastX = key.getXPos();
-				mouseLastY = key.getYPos();
+				mouseLastX = key.get<0>();
+				mouseLastY = key.get<1>();
 			}
 		});
 }

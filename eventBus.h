@@ -5,6 +5,8 @@
 #include <functional>
 #include <unordered_map>
 #include <memory>
+#include <tuple>
+#include <type_traits>
 
 namespace EventDispatcher
 {
@@ -34,7 +36,7 @@ namespace EventDispatcher
 
 		bool isInCategory(EventType category)
 		{
-			return getCategoryFlags() & category;
+			return static_cast<int>(getCategoryFlags()) & static_cast<int>(category);
 		}
 
 	private:
@@ -44,6 +46,35 @@ namespace EventDispatcher
 		std::string myName;
 
 	};
+
+	//Generic event
+	template<typename... Args>
+	class PayloadEvent : public Event
+	{
+	public:
+		using Tuple = std::tuple<std::decay_t<Args>...>;
+
+		template<typename... Ts>
+		PayloadEvent(EventType type, std::string name, Ts&&... args)
+			: Event(type, std::move(name)), myData(std::forward<Ts>(args)...) {
+		}
+
+		const Tuple& data() const { return myData; }
+
+		template<std::size_t I>
+		const auto& get() const { return std::get<I>(myData); }
+
+		// Pour compatibility purpose, TODO : REMOVE
+		int getCategoryFlags() const override { return static_cast<int>(getType()); }
+	private:
+		Tuple myData;
+	};
+
+	template<typename... Args>
+	std::unique_ptr<Event> makeEvent(EventType type, std::string name, Args&&... args)
+	{
+		return std::make_unique<PayloadEvent<std::decay_t<Args>...>>(type, std::move(name), std::forward<Args>(args)...);
+	}
 
 	class EventBus
 	{
