@@ -34,10 +34,8 @@ int main(int argc, char* argv[])
 		eventBus->dispatchEvents();
 
 		//RENDERER WORK HERE
-
 		renderer->update(glm::vec3(0.0f, 0.0f, -2.5f), window->triOffset, glm::vec3(0.0f, 1.0f, 0.0f), glm::vec3(0.4f, 0.4f, 0.4f));
 		//renderer->update(glm::vec3(0.0f, 0.0f, -2.5f), 45, glm::vec3(0.0f, window->triOffset, 0.0f), glm::vec3(0.4f, 0.4f, 1.0f));
-
 
 		//PHYSICS COMPUTATION HERE
 

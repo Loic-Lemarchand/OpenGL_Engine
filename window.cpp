@@ -66,6 +66,8 @@ Window::Window(int width, int height, const char* title, InputManager& inputMana
 
 	glfwSetWindowUserPointer(myWindow, this);
 	auto& eventBus = myInputManager.getEventBus();
+
+	//Bind lambdas to the event bus
 	eventBus.subscribe(EventDispatcher::EventType::KeyPressed,
 		[this](const EventDispatcher::Event& e)
 		{
@@ -84,6 +86,17 @@ Window::Window(int width, int height, const char* title, InputManager& inputMana
 		{
 			const KeyReleasedEvent& key = static_cast<const KeyReleasedEvent&>(e);
 			triIncrement = 0;
+		});
+
+	eventBus.subscribe(EventDispatcher::EventType::MouseMoved,
+		[this](const EventDispatcher::Event& e)
+		{
+			const MouseEvent& key = static_cast<const MouseEvent&>(e);
+			if (mouseFirstMoved)
+			{
+				mouseLastX = key.getXPos();
+				mouseLastY = key.getYPos();
+			}
 		});
 }
 
@@ -126,6 +139,11 @@ void Window::key_callback(GLFWwindow* window, int key, int scancode, int action,
 	}
 		
 	win->myInputManager.processKey(key, action);
+}
+
+void Window::HandleMouse(GLFWwindow* window, double xPos, double yPos)
+{
+
 }
 
 void Window::framebuffer_size_callback(GLFWwindow* window, int width, int height)

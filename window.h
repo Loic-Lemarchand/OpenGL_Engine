@@ -36,6 +36,11 @@ private:
 	
 	static float triIncrement;
 
+	//Mouse infos
+	bool mouseFirstMoved;
+	double mouseLastX, mouseLastY;
+	
+
 
 	InputManager& myInputManager;
 
@@ -43,6 +48,8 @@ private:
 	static void errorCallback(int code, const char* description);
 	static void key_callback(GLFWwindow* window, int key, int scancode, int action, int mods);
 	static void framebuffer_size_callback(GLFWwindow* window, int width, int height);
+	static void HandleMouse(GLFWwindow* window, double xPos, double yPos);
+
 
 
 	//Events 

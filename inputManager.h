@@ -23,6 +23,9 @@ public:
 
 	int getKey() const { return myKey; }
 
+	int getCategoryFlags() const { return EventDispatcher::EventType::KeyPressed; };
+
+
 private:
 	int myKey;
 };
@@ -34,9 +37,27 @@ public:
 
 	int getKey() const { return myKey; }
 
+	int getCategoryFlags() const { return EventDispatcher::EventType::KeyReleased; };
+
 private:
 	int myKey;
 };
+
+class MouseEvent : public EventDispatcher::Event
+{
+public:
+	MouseEvent(double xPos, double yPos) : Event(EventDispatcher::EventType::MouseMoved, "Moved mouse to x : " + std::to_string((int)xPos) + " and y : " + std::to_string((int)yPos)), myXPos(xPos), myYPos(yPos) {};
+
+	double getXPos() const { return myXPos; }
+	double getYPos() const { return myYPos; }
+
+	int getCategoryFlags() const { return EventDispatcher::EventType::MouseMoved; };
+
+private:
+	double myXPos, myYPos;
+};
+
+
 
 class WindowResizeEvent : public EventDispatcher::Event
 {
@@ -45,6 +66,8 @@ public:
 
 	int getWidth() const { return myWidth; }
 	int getHeight() const { return myHeight; }
+
+	int getCategoryFlags() const { return EventDispatcher::EventType::WindowResized; };
 
 private:
 	int myWidth;

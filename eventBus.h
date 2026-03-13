@@ -15,7 +15,10 @@ namespace EventDispatcher
 		None = 0,
 		KeyPressed = BIT(0),
 		KeyReleased = BIT(1),
-		WindowResized = BIT(2)
+		WindowResized = BIT(2),
+		RotateLeft = BIT(3),
+		RotateRight = BIT(4),
+		MouseMoved = BIT(5)
 	};
 
 	class Event
@@ -26,6 +29,13 @@ namespace EventDispatcher
 
 		virtual EventType getType() const { return myType;  }
 		virtual std::string getName() const { return myName;  }
+
+		virtual int getCategoryFlags() const = 0;
+
+		bool isInCategory(EventType category)
+		{
+			return getCategoryFlags() & category;
+		}
 
 	private:
 
