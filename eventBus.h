@@ -64,7 +64,7 @@ namespace EventDispatcher
 		template<std::size_t I>
 		const auto& get() const { return std::get<I>(myData); }
 
-		// Pour compatibility purpose, TODO : REMOVE
+		// For compatibility purpose, TODO : REMOVE
 		int getCategoryFlags() const override { return static_cast<int>(getType()); }
 	private:
 		Tuple myData;
@@ -88,8 +88,68 @@ namespace EventDispatcher
 
 		void clearEvents();
 
+		// generic subscribe which can be used with lambda
 		void subscribe(EventType type, std::function<void(const Event&)> callback);
 
+		// --- New overloads: méthodes membres (raw pointer) ---
+		template<typename T>
+		void subscribe(EventType type, void (T::* method)(const Event&), T* instance)
+		{
+			// wrap into the existing std::function subscription
+			subscribe(type, [method, instance](const Event& e) {
+				(instance->*method)(e);
+				});
+		}
+
+		// payload-unpacking: member function taking the payload args
+		template<typename T, typename... Args>
+		void subscribe(EventType type, void (T::* method)(Args...), T* instance)
+		{
+			subscribe(type, [method, instance](const Event& e) {
+				using ExpectedPayload = PayloadEvent<Args...>;
+				if (const ExpectedPayload* payload = dynamic_cast<const ExpectedPayload*>(&e))
+				{
+					std::apply([method, instance](const auto&... unpacked) {
+						(instance->*method)(unpacked...);
+						}, payload->data());
+				}
+				else
+				{
+					// warning when payload type does not match
+					std::fprintf(stderr, "Warning: Event payload mismatch for EventType %d. Expected '%s', got '%s'.\n",
+						static_cast<int>(e.getType()),
+						typeid(e).name(),
+						typeid(ExpectedPayload).name());
+				}
+				});
+		}
+
+		// --- Versions sécurisées avec shared_ptr (stocke un weak_ptr interne) ---
+		template<typename T>
+		void subscribe(EventType type, void (T::* method)(const Event&), const std::shared_ptr<T>& instance)
+		{
+			std::weak_ptr<T> wp = instance;
+			subscribe(type, [method, wp](const Event& e) {
+				if (auto sp = wp.lock()) (sp.get()->*method)(e);
+				});
+		}
+
+		template<typename T, typename... Args>
+		void subscribe(EventType type, void (T::* method)(Args...), const std::shared_ptr<T>& instance)
+		{
+			std::weak_ptr<T> wp = instance;
+			subscribe(type, [method, wp](const Event& e) {
+				if (auto* payload = dynamic_cast<const PayloadEvent<Args...>*>(&e))
+				{
+					if (auto sp = wp.lock())
+					{
+						std::apply([method, sp](const auto&... unpacked) {
+							(sp.get()->*method)(unpacked...);
+							}, payload->data());
+					}
+				}
+				});
+		}
 
 	private:
 

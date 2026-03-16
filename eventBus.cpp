@@ -22,6 +22,7 @@ namespace EventDispatcher{
 		mySubscribers[type].push_back(callback);
 	}
 
+
 	void EventBus::dispatchEvents()
 	{
 		for (auto& event : myEventQueue)
