@@ -20,7 +20,7 @@ namespace EventDispatcher
 		WindowResized = BIT(2),
 		RotateLeft = BIT(3),
 		RotateRight = BIT(4),
-		MouseMoved = BIT(5)
+		MouseMoved = BIT(5),
 	};
 
 	class Event

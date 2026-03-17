@@ -1,16 +1,19 @@
 
 #include "renderer.h"
 #include "shader.h"
+#include "camera.h"
 
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/type_ptr.hpp>
 
 float toRadians = 3.14159265 / 180.0f;
 
-Renderer::Renderer(int frameBufferWidth, int frameBufferHeight) : bIsValid(true)
+Renderer::Renderer(int frameBufferWidth, int frameBufferHeight, Camera* camera) : 
+	bIsValid(true), 
+	myCamera(camera)
 {
 	createBuffers();
-
+	
 	glEnable(GL_DEPTH_TEST);
 
 	//Setup projection matrix
@@ -46,12 +49,14 @@ void Renderer::createBuffers()
 	{
 		myUniformModel = glGetUniformLocation(myShader->myProgramID, "model");
 		myUniformProjection = glGetUniformLocation(myShader->myProgramID, "projection");
+		myUniformView = glGetUniformLocation(myShader->myProgramID, "view");
 	}
 	else
 	{
 		utilities::log("Shader is invalid, cannot get uniform location");
 		myUniformModel = -1;
 		myUniformProjection = -1;
+		myUniformView = -1;
 	}
 	
 
@@ -88,6 +93,13 @@ void Renderer::update(glm::vec3 translation, float rotation, glm::vec3 rotationA
 
 		glUniformMatrix4fv(myUniformModel, 1, GL_FALSE, glm::value_ptr(model));
 		glUniformMatrix4fv(myUniformProjection, 1, GL_FALSE, glm::value_ptr(myProjection));
+
+		// send the view matrix if camera is valid
+		if (myCamera && myUniformView != -1)
+		{
+			glm::mat4 view = myCamera->CalculateViewMatrix();
+			glUniformMatrix4fv(myUniformView, 1, GL_FALSE, glm::value_ptr(view));
+		}
 
 		glBindVertexArray(myVAO);
 		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, myIBO);

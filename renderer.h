@@ -33,12 +33,13 @@ static float vertices[] =
 };
 
 class Shader;
+class Camera;
 
 class Renderer
 {
 public:
 	Renderer() = delete;
-	Renderer(int frameBufferWidth, int frameBufferHeight);
+	Renderer(int frameBufferWidth, int frameBufferHeight, Camera* camera);
 	~Renderer();
 
 	void update(glm::vec3 translation, float rotation, glm::vec3 rotationAxe, glm::vec3 scale);
@@ -51,6 +52,8 @@ private:
 
 	void createBuffers();
 
+	Camera* myCamera;
+
 	unsigned int myVAO;
 	unsigned int myVBO;
 	unsigned int myIBO;
@@ -60,4 +63,5 @@ private:
 
 	GLuint myUniformModel;
 	GLuint myUniformProjection;
+	GLuint myUniformView;
 };

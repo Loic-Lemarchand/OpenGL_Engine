@@ -1,26 +1,115 @@
 #include "camera.h"
 #include "utilities.h"
 
-Camera::Camera(glm::vec3 startPosition, glm::vec3 startUp, GLfloat startYaw, GLfloat startPitch, GLfloat setMovementSpeed, GLfloat setTurnSpeed) :
+Camera::Camera(glm::vec3 startPosition, glm::vec3 startUp, GLfloat startYaw, GLfloat startPitch, GLfloat setMovementSpeed, GLfloat setTurnSpeed, EventDispatcher::EventBus& eventBus) :
 	position(startPosition),
 	up(startUp),
 	yaw(startYaw),
 	pitch(startPitch),
 	movementSpeed(setMovementSpeed),
 	turnSpeed(setTurnSpeed),
-	front(0),
+	front(glm::vec3(0.0f, 0.0f, -1.0f)),
 	right(0),
-	worldUp(0)
+	worldUp(startUp),
+	lastX(0.0f),
+	lastY(0.0f)
 {
-	
+	eventBus.subscribe(EventDispatcher::KeyPressed, &Camera::onKeyBoardInput, this);
+	eventBus.subscribe(EventDispatcher::MouseMoved, &Camera::onMouseInput, this);
+	eventBus.subscribe(EventDispatcher::KeyReleased, &Camera::onKeyBoardRelease, this);
+	update();
 }
 
 Camera::~Camera()
 {
-
+	
 }
 
 void Camera::update()
 {
-	
+	front.x = cos(glm::radians(yaw)) * cos(glm::radians(pitch));
+	front.y = sin(glm::radians(pitch));
+	front.z = sin(glm::radians(yaw)) * cos(glm::radians(pitch));
+
+	front = glm::normalize(front);
+
+	//Always orthogonal worldUp and right vectors - WE BLOCK THE POSSIBILITY TO ROLL
+	right = glm::normalize(glm::cross(front, worldUp));
+	up = glm::normalize(glm::cross(right, front));
+
+	float cameraSpeed = movementSpeed * deltaTime;
+	for (const auto key : keysDown)
+	{
+		switch (key)
+		{
+			case GLFW_KEY_W:
+				position += cameraSpeed * front;
+				break;
+			case GLFW_KEY_A:
+				position -= cameraSpeed * right;
+				break;
+			case GLFW_KEY_S:
+				position -= cameraSpeed * front;
+				break;
+			case GLFW_KEY_D:
+				position += cameraSpeed * right;
+				break;
+			case GLFW_KEY_E:
+				position += cameraSpeed * up;
+				break;
+			case GLFW_KEY_Q:
+				position -= cameraSpeed * up;
+				break;
+			default:
+				break;
+		}
+	}
+
+	CalculateViewMatrix();
+}
+
+glm::mat4 Camera::CalculateViewMatrix()
+{
+	return glm::lookAt(position, position + front, up);
+}
+
+
+void Camera::onKeyBoardInput(int key)
+{
+	keysDown.insert(key);
+	utilities::log("Camera position is : x = " + std::to_string(position.x) + " y = " + std::to_string(position.y) + " z = " + std::to_string(position.z));
+}
+
+void Camera::onKeyBoardRelease(int key)
+{
+	keysDown.erase(key);
+}
+
+void Camera::onMouseInput(double x, double y)
+{
+	if (firstMove)
+	{
+		lastX = x;
+		lastY = y;
+		firstMove = false;
+	}
+
+	float xOffset =  x - lastX;
+	float yOffset = lastY - y;
+
+	lastX = x;
+	lastY = y;
+
+	xOffset *= turnSpeed;
+	yOffset *= turnSpeed;
+
+	yaw += xOffset;
+	pitch += yOffset;
+
+	if (pitch > 89.0f)
+		pitch = 89.0f;
+	if (pitch < -89.0f)
+		pitch = -89.0f;
+
+	utilities::log("Camera rotation is : yaw = " + std::to_string(yaw) + " pitch = " + std::to_string(pitch));
 }
