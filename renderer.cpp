@@ -2,6 +2,8 @@
 #include "renderer.h"
 #include "shader.h"
 #include "camera.h"
+#include "texture.h"
+
 
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/type_ptr.hpp>
@@ -10,7 +12,9 @@ float toRadians = 3.14159265 / 180.0f;
 
 Renderer::Renderer(int frameBufferWidth, int frameBufferHeight, Camera* camera) : 
 	bIsValid(true), 
-	myCamera(camera)
+	myCamera(camera),
+	myShader(nullptr),
+	myTexture(nullptr)
 {
 	createBuffers();
 	
@@ -42,7 +46,7 @@ void Renderer::createBuffers()
 	glBindBuffer(GL_ARRAY_BUFFER, myVBO);
 	glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
 
-	myShader = std::make_unique<Shader>("D:/Dev/ProjetOpengl/vertexShader.glsl", "D:/Dev/ProjetOpengl/fragmentShader.glsl");
+	myShader = std::make_unique<Shader>("../vertexShader.glsl", "../fragmentShader.glsl");
 
 	// Ensure shader is valid before getting uniform location
 	if (myShader && myShader->bIsValid)
@@ -50,6 +54,7 @@ void Renderer::createBuffers()
 		myUniformModel = glGetUniformLocation(myShader->myProgramID, "model");
 		myUniformProjection = glGetUniformLocation(myShader->myProgramID, "projection");
 		myUniformView = glGetUniformLocation(myShader->myProgramID, "view");
+		myUniformTexture = glGetUniformLocation(myShader->myProgramID, "texture1");
 	}
 	else
 	{
@@ -57,6 +62,7 @@ void Renderer::createBuffers()
 		myUniformModel = -1;
 		myUniformProjection = -1;
 		myUniformView = -1;
+		myUniformTexture = -1;
 	}
 	
 
@@ -66,13 +72,18 @@ void Renderer::createBuffers()
 	//p4 : No normalization of data
 	//p5 : Stride - the space beetween consecutive vertex attribute (basically the size of a single vertex)
 	//p6 : Offset of the beginning of the position data
-	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
+	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)0);
+
+	//UVs
+	glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)(3 * sizeof(float)));
 
 	glEnableVertexAttribArray(0);
+	glEnableVertexAttribArray(1);
+
+	std::string textName("../Wood_Color.jpg");
+	myTexture = std::make_unique<Texture>(1024, 1024, 1, textName.c_str());
 
 	glBindVertexArray(myVAO);
-
-
 	
 
 	utilities::log("Successfully created renderer");
@@ -90,6 +101,16 @@ void Renderer::update(glm::vec3 translation, float rotation, glm::vec3 rotationA
 		model = glm::translate(model, translation);
 		model = glm::rotate(model, rotation * toRadians, rotationAxe);
 		model = glm::scale(model, scale);
+
+		
+		if (myUniformTexture != -1)
+		{
+			if (myTexture && myTexture->bIsValid)
+			{
+				myTexture->bind(0);
+			}
+			glUniform1i(myUniformTexture, 0);
+		}
 
 		glUniformMatrix4fv(myUniformModel, 1, GL_FALSE, glm::value_ptr(model));
 		glUniformMatrix4fv(myUniformProjection, 1, GL_FALSE, glm::value_ptr(myProjection));

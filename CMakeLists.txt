@@ -18,6 +18,7 @@ add_executable(${PROJECT_NAME}
     window.cpp
     renderer.cpp
     shader.cpp
+    texture.cpp
 
     utilities.cpp
     inputManager.cpp
@@ -27,11 +28,16 @@ add_executable(${PROJECT_NAME}
     window.h
     renderer.h
     shader.h
+    texture.h
 
     utilities.h
     inputManager.h
     eventBus.h
     camera.h
+
+    stb_image.h
+
+    Wood_Color.jpg
 )
 
 # ---- Linking ----

@@ -26,13 +26,14 @@ static int indices[] =
 
 static float vertices[] =
 {
-	-1.0f, -1.0f, 0.0f,
-	0.0f, -1.0f, 1.0f,
-	1.0f, -1.0f, 0.0f,
-	0.0f, 1.0f, 0.0f
+	-1.0f, -1.0f, 0.0f, 0.0f, 0.0f,
+	0.0f, -1.0f, 1.0f, 0.0f, 1.0f,
+	1.0f, -1.0f, 0.0f, 1.0f, 0.0f,
+	0.0f, 1.0f, 0.0f, 1.0f, 1.0f
 };
 
 class Shader;
+class Texture;
 class Camera;
 
 class Renderer
@@ -49,6 +50,7 @@ public:
 private:
 	
 	std::unique_ptr<Shader> myShader;
+	std::unique_ptr<Texture> myTexture;
 
 	void createBuffers();
 
@@ -64,4 +66,5 @@ private:
 	GLuint myUniformModel;
 	GLuint myUniformProjection;
 	GLuint myUniformView;
+	GLuint myUniformTexture;
 };

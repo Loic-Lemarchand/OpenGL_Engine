@@ -25,7 +25,7 @@ int main(int argc, char* argv[])
 	float initYaw = glm::degrees(atan2(cameraDirection.z, cameraDirection.x));
 
 	//glm::cross(glm::vec3(1.0f, 0.0f, 0.0f), -cameraDirection) start up
-	std::unique_ptr<Camera> camera = std::make_unique<Camera>(cameraPosition, glm::vec3(0.0f, 1.0f, 0.0f), initYaw, initPitch, 10.0f, .5f, *eventBus);
+	std::unique_ptr<Camera> camera = std::make_unique<Camera>(cameraPosition, glm::vec3(0.0f, 1.0f, 0.0f), initYaw, initPitch, 2.0f, .1f, *eventBus);
 
 
 	if (!window->bIsValid)
