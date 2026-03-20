@@ -15,6 +15,8 @@ public:
 	Camera(glm::vec3 startPosition, glm::vec3 startUp, GLfloat startYaw, GLfloat startPitch, GLfloat setMovementSpeed, GLfloat setTurnSpeed, EventDispatcher::EventBus& eventBus);
 	~Camera();
 
+	bool bIsValid;
+
 	void update();
 
 

@@ -25,6 +25,7 @@ add_executable(${PROJECT_NAME}
     inputManager.cpp
     eventBus.cpp
     camera.cpp
+    light.cpp
 
     window.h
     renderer.h
@@ -36,6 +37,7 @@ add_executable(${PROJECT_NAME}
     inputManager.h
     eventBus.h
     camera.h
+    light.h
 
     stb_image.h
 

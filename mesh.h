@@ -18,6 +18,8 @@ public:
 	Mesh(std::shared_ptr<Shader> shader);
 	~Mesh();
 
+	bool bIsValid;
+
 	void draw();
 
 	Vertex getVertex(int i) { return myVertices[i]; }

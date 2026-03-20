@@ -7,6 +7,7 @@
 
 
 Mesh::Mesh(std::shared_ptr<Shader> shader) :
+	bIsValid(true),
 	myVAO(0),
 	myVBO(0),
 	myIBO(0)
