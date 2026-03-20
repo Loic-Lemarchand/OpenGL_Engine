@@ -11,11 +11,13 @@
 
 float toRadians = 3.14159265 / 180.0f;
 
-Renderer::Renderer(int frameBufferWidth, int frameBufferHeight, Camera* camera) : 
-	bIsValid(true), 
+Renderer::Renderer(int frameBufferWidth, int frameBufferHeight, Camera* camera) :
+	bIsValid(true),
 	myCamera(camera),
 	myShader(nullptr),
-	myTexture(nullptr)
+	myTexture(nullptr),
+	myAmbientLightingStrength(2.0f),
+	myAmbientLightingColor({1.0f, 1.0f, 1.0f})
 {
 	createBuffers();
 	
@@ -59,10 +61,13 @@ void Renderer::createBuffers()
 	// Ensure shader is valid before getting uniform location
 	if (myShader && myShader->bIsValid)
 	{
+		//TODO : remplacer par les methodes de la classe shader et ajouter une methode vec3
 		myUniformModel = glGetUniformLocation(myShader->myProgramID, "model");
 		myUniformProjection = glGetUniformLocation(myShader->myProgramID, "projection");
 		myUniformView = glGetUniformLocation(myShader->myProgramID, "view");
 		myUniformTexture = glGetUniformLocation(myShader->myProgramID, "texture1");
+		myUniformAmbientLightingStrength = glGetUniformLocation(myShader->myProgramID, "ambientLightingIntensity");
+		myUniformAmbientLightingColor = glGetUniformLocation(myShader->myProgramID, "ambientLightingColor");
 	}
 	else
 	{
@@ -71,6 +76,8 @@ void Renderer::createBuffers()
 		myUniformProjection = -1;
 		myUniformView = -1;
 		myUniformTexture = -1;
+		myUniformAmbientLightingStrength = -1;
+		myUniformAmbientLightingColor = -1;
 	}
 	
 	newMesh->SetupMesh();
@@ -98,6 +105,12 @@ void Renderer::update(glm::vec3 translation, float rotation, glm::vec3 rotationA
 				myTexture->bind(0);
 			}
 			glUniform1i(myUniformTexture, 0);
+		}
+
+		if (myUniformAmbientLightingStrength != -1 && myUniformAmbientLightingColor != -1)
+		{
+			glUniform1f(myUniformAmbientLightingStrength, myAmbientLightingStrength);
+			glUniform3f(myUniformAmbientLightingColor, myAmbientLightingColor.x, myAmbientLightingColor.y, myAmbientLightingColor.z);
 		}
 
 		glUniformMatrix4fv(myUniformModel, 1, GL_FALSE, glm::value_ptr(model));

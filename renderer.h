@@ -37,7 +37,7 @@ public:
 	bool bIsValid;
 
 private:
-	
+
 	std::shared_ptr<Shader> myShader;
 	std::shared_ptr<Texture> myTexture;
 
@@ -55,4 +55,12 @@ private:
 	GLuint myUniformProjection;
 	GLuint myUniformView;
 	GLuint myUniformTexture;
+
+	//Ambient Lighting
+	float myAmbientLightingStrength;
+	glm::vec3 myAmbientLightingColor;
+
+	GLuint myUniformAmbientLightingStrength;
+	GLuint myUniformAmbientLightingColor;
+
 };
