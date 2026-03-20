@@ -3,6 +3,7 @@
 #include "shader.h"
 #include "camera.h"
 #include "texture.h"
+#include "mesh.h"
 
 
 #include <glm/gtc/matrix_transform.hpp>
@@ -26,27 +27,34 @@ Renderer::Renderer(int frameBufferWidth, int frameBufferHeight, Camera* camera) 
 
 Renderer::~Renderer()
 {
-
+	
 }
 
 void Renderer::createBuffers()
 {
 	
-	glGenVertexArrays(1, &myVAO);
 
-	glBindVertexArray(myVAO);
+	myShader = std::make_shared<Shader>("../vertexShader.glsl", "../fragmentShader.glsl");
 
-	glGenBuffers(1, &myIBO);
-	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, myIBO);
-	glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices), indices, GL_STATIC_DRAW);
+	std::string textName("../Wood_Color.jpg");
+	myTexture = std::make_shared<Texture>(1024, 1024, 1, textName.c_str());
 
-	glGenBuffers(1, &myVBO);
+	// Conversion de verticesData en std::vector<Vertex>
+	std::vector<Vertex> vertices;
+	for (size_t i = 0; i < verticesData.size(); i += 5)
+	{
+		Vertex vertex;
+		vertex.Position = glm::vec3(verticesData[i], verticesData[i+1], verticesData[i+2]);
+		vertex.TexCoords = glm::vec2(verticesData[i+3], verticesData[i+4]);
+		vertices.push_back(vertex);
+	}
 
+	std::shared_ptr<Mesh> newMesh = std::make_shared<Mesh>(myShader);
+	newMesh->addIndices(indices);
+	newMesh->addVertices(vertices);
+	newMesh->addTexture(myTexture);
+	myMeshes.push_back(newMesh);
 
-	glBindBuffer(GL_ARRAY_BUFFER, myVBO);
-	glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
-
-	myShader = std::make_unique<Shader>("../vertexShader.glsl", "../fragmentShader.glsl");
 
 	// Ensure shader is valid before getting uniform location
 	if (myShader && myShader->bIsValid)
@@ -65,27 +73,7 @@ void Renderer::createBuffers()
 		myUniformTexture = -1;
 	}
 	
-
-	//p1 : location is 0 in the vertex shader so it is 0
-	//p2 : 3 because of vec3
-	//p3 : glsl vec are float values
-	//p4 : No normalization of data
-	//p5 : Stride - the space beetween consecutive vertex attribute (basically the size of a single vertex)
-	//p6 : Offset of the beginning of the position data
-	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)0);
-
-	//UVs
-	glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)(3 * sizeof(float)));
-
-	glEnableVertexAttribArray(0);
-	glEnableVertexAttribArray(1);
-
-	std::string textName("../Wood_Color.jpg");
-	myTexture = std::make_unique<Texture>(1024, 1024, 1, textName.c_str());
-
-	glBindVertexArray(myVAO);
-	
-
+	newMesh->SetupMesh();
 	utilities::log("Successfully created renderer");
 }
 
@@ -122,15 +110,13 @@ void Renderer::update(glm::vec3 translation, float rotation, glm::vec3 rotationA
 			glUniformMatrix4fv(myUniformView, 1, GL_FALSE, glm::value_ptr(view));
 		}
 
-		glBindVertexArray(myVAO);
-		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, myIBO);
-	
-		glDrawElements(GL_TRIANGLES, 12, GL_UNSIGNED_INT, 0);
-		//glDrawArrays(GL_TRIANGLES, 0, 3);
-
-		glBindBuffer(GL_ARRAY_BUFFER, 0);
-		glBindVertexArray(0);
-		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
+		for (auto mesh : myMeshes)
+		{
+			if (mesh)
+			{
+				mesh->draw();
+			}
+		}
 
 	glUseProgram(0);
 }

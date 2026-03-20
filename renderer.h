@@ -3,29 +3,17 @@
 #include "utilities.h"
 #include <glad/glad.h>
 #include <glm/glm.hpp>
+#include <vector>
 
-
-
-/*static float vertices[] =
-{
-	0.0f, -0.5f, 0.0f,
-	1.0f, -0.5f, 0.0f,
-	0.5f, 0.5f, 0.0f,
-	0.0f, -0.5f, 0.0f,
-	-1.0f, -0.5f, 0.0f,
-	-0.5f, 0.5f, 0.0f
-};*/
-
-static int indices[] =
-{
+// Changement: utiliser std::vector au lieu de tableaux statiques
+static std::vector<unsigned int> indices = {
 	0, 3, 1,
 	1, 3, 2,
 	2, 3, 0,
 	0, 1, 2
 };
 
-static float vertices[] =
-{
+static std::vector<float> verticesData = {
 	-1.0f, -1.0f, 0.0f, 0.0f, 0.0f,
 	0.0f, -1.0f, 1.0f, 0.0f, 1.0f,
 	1.0f, -1.0f, 0.0f, 1.0f, 0.0f,
@@ -35,6 +23,7 @@ static float vertices[] =
 class Shader;
 class Texture;
 class Camera;
+class Mesh;
 
 class Renderer
 {
@@ -49,16 +38,15 @@ public:
 
 private:
 	
-	std::unique_ptr<Shader> myShader;
-	std::unique_ptr<Texture> myTexture;
+	std::shared_ptr<Shader> myShader;
+	std::shared_ptr<Texture> myTexture;
+
+	std::vector<std::shared_ptr<Mesh>> myMeshes;
 
 	void createBuffers();
 
 	Camera* myCamera;
 
-	unsigned int myVAO;
-	unsigned int myVBO;
-	unsigned int myIBO;
 	unsigned int myShaderProgram;
 
 	glm::mat4 myProjection;

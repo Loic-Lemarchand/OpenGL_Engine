@@ -19,6 +19,7 @@ add_executable(${PROJECT_NAME}
     renderer.cpp
     shader.cpp
     texture.cpp
+    mesh.cpp
 
     utilities.cpp
     inputManager.cpp
@@ -29,6 +30,7 @@ add_executable(${PROJECT_NAME}
     renderer.h
     shader.h
     texture.h
+    mesh.h
 
     utilities.h
     inputManager.h
