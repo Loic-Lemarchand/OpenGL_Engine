@@ -10,21 +10,47 @@
 class Light
 {
 public:
-	Light(glm::vec3 ambientColor, glm::vec3 diffuseColor, float diffuseIntensity);
+	Light(glm::vec3 color, float intensity);
 	~Light();
 
 	bool bIsValid;
 
-	void virtual applyUniforms(Shader shader, int index) = 0;
+	void virtual applyUniforms(std::shared_ptr<Shader> shader, int index) = 0;
 
-	void setAmbientColor(glm::vec3 color) { myAmbientColor = color; }
-	void setDiffuseColor(glm::vec3 color) { myDiffuseColor = color; }
-	void setAmbientColor(int intensity) { myDiffuseIntensity = intensity; }
+	void virtual update() = 0;
+
+	void setColor(glm::vec3 color) { myColor = color; }
+	void setIntensity(int intensity) { myIntensity = intensity; }
+
+	glm::vec3 getColor() { return myColor; }
+	float getIntensity() { return myIntensity; }
+
+protected:
+
+	glm::vec3 myColor;
+	float myIntensity;
+};
+
+class PointLight : public Light
+{
+public:
+	PointLight(glm::vec3 color, float intensity, glm::vec3 position);
+	~PointLight();
+
+	void update() override;
+
+	void applyUniforms(std::shared_ptr<Shader> shader, int index) override;
+
+
+protected:
+
+	glm::vec3 myPosition;
 
 private:
 
-	glm::vec3 myAmbientColor;
-	glm::vec3 myDiffuseColor;
-	float myDiffuseIntensity;
+	GLuint myUniformDiffuseLightPosition;
+	GLuint myUniformDiffuseLightColor;
+	GLuint myUniformDiffuseLightIntensity;
 };
+
 

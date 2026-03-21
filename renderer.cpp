@@ -16,8 +16,9 @@ Renderer::Renderer(int frameBufferWidth, int frameBufferHeight, Camera* camera) 
 	myCamera(camera),
 	myShader(nullptr),
 	myTexture(nullptr),
-	myAmbientLightingStrength(2.0f),
-	myAmbientLightingColor({1.0f, 1.0f, 1.0f})
+	myAmbientLightingStrength(.2f),
+	myAmbientLightingColor({1.0f, 1.0f, 1.0f}),
+	myPointLight(nullptr)
 {
 	createBuffers();
 	
@@ -25,6 +26,10 @@ Renderer::Renderer(int frameBufferWidth, int frameBufferHeight, Camera* camera) 
 
 	//Setup projection matrix
 	myProjection = glm::perspective(45.0f, (GLfloat)frameBufferWidth / (GLfloat)frameBufferHeight, 0.1f, 100.0f);
+
+	//Lights
+	myPointLight = std::make_shared<PointLight>(glm::vec3(.1f, .1f, 1.0f), 7.0f, glm::vec3(- 4.0f, 3.0f, 0.0f));
+	myPointLight->applyUniforms(myShader, 0);
 }
 
 Renderer::~Renderer()
@@ -48,7 +53,29 @@ void Renderer::createBuffers()
 		Vertex vertex;
 		vertex.Position = glm::vec3(verticesData[i], verticesData[i+1], verticesData[i+2]);
 		vertex.TexCoords = glm::vec2(verticesData[i+3], verticesData[i+4]);
+		vertex.Normal = glm::vec3(0.0f);
 		vertices.push_back(vertex);
+	}
+
+	// Calcul des normales par face, accumulées par vertex
+	for (size_t i = 0; i < indices.size(); i += 3)
+	{
+		unsigned int i0 = indices[i];
+		unsigned int i1 = indices[i + 1];
+		unsigned int i2 = indices[i + 2];
+
+		glm::vec3 e1 = vertices[i1].Position - vertices[i0].Position;
+		glm::vec3 e2 = vertices[i2].Position - vertices[i0].Position;
+		glm::vec3 faceNormal = glm::cross(e1, e2);
+
+		vertices[i0].Normal += faceNormal;
+		vertices[i1].Normal += faceNormal;
+		vertices[i2].Normal += faceNormal;
+	}
+
+	for (auto& v : vertices)
+	{
+		v.Normal = glm::normalize(v.Normal);
 	}
 
 	std::shared_ptr<Mesh> newMesh = std::make_shared<Mesh>(myShader);
@@ -112,6 +139,8 @@ void Renderer::update(glm::vec3 translation, float rotation, glm::vec3 rotationA
 			glUniform1f(myUniformAmbientLightingStrength, myAmbientLightingStrength);
 			glUniform3f(myUniformAmbientLightingColor, myAmbientLightingColor.x, myAmbientLightingColor.y, myAmbientLightingColor.z);
 		}
+
+		myPointLight->update();
 
 		glUniformMatrix4fv(myUniformModel, 1, GL_FALSE, glm::value_ptr(model));
 		glUniformMatrix4fv(myUniformProjection, 1, GL_FALSE, glm::value_ptr(myProjection));

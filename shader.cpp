@@ -63,6 +63,14 @@ Shader::Shader(const char* vertexPath, const char* fragmentPath) : bIsValid(true
 
 }
 
+Shader::~Shader()
+{
+	if (myProgramID != 0)
+	{
+		glDeleteProgram(myProgramID);
+	}
+}
+
 GLuint Shader::AddShader(const char* shaderCode, GLenum shaderType)
 {
 	GLuint shader = glCreateShader(shaderType);

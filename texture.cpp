@@ -45,5 +45,6 @@ void Texture::bind(unsigned int unit) const
 
 Texture::~Texture()
 {
+	glDeleteTextures(1, &myTexture);
 	stbi_image_free(myData);
 }

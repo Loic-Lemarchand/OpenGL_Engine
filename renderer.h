@@ -1,6 +1,7 @@
 #pragma once
 
 #include "utilities.h"
+#include "light.h"
 #include <glad/glad.h>
 #include <glm/glm.hpp>
 #include <vector>
@@ -62,5 +63,8 @@ private:
 
 	GLuint myUniformAmbientLightingStrength;
 	GLuint myUniformAmbientLightingColor;
+
+	//Diffuse Lighting
+	std::shared_ptr<PointLight> myPointLight;
 
 };

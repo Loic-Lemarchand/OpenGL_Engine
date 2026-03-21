@@ -16,6 +16,7 @@ public:
 	unsigned int myProgramID;
 
 	Shader(const char* vertexPath, const char* fragmentPath);
+	~Shader();
 
 	GLuint AddShader(const char* shaderCode, GLenum shaderType);
 
