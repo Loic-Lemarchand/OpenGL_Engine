@@ -13,7 +13,6 @@ Mesh::Mesh(std::shared_ptr<Shader> shader) :
 	myIBO(0)
 {
 	myShader = shader;
-	utilities::log("Successfully created Mesh");
 }
 
 Mesh::~Mesh()
@@ -69,6 +68,17 @@ void Mesh::SetupMesh()
 
 void Mesh::draw()
 {
+	int i = 0;
+	for (std::shared_ptr<Texture> texture : myTextures)
+	{
+		if (texture && texture->bIsValid)
+		{
+			texture->bind(i);
+		}
+		i++;
+	}
+
+
 	glBindVertexArray(myVAO);
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, myIBO);
 

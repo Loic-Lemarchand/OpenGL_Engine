@@ -13,7 +13,7 @@ int main(int argc, char* argv[])
 	std::unique_ptr<Renderer> renderer = nullptr;
 	std::unique_ptr<EventDispatcher::EventBus> eventBus = std::make_unique<EventDispatcher::EventBus>();
 	std::unique_ptr<InputManager> inputManager = std::make_unique<InputManager>(*eventBus);
-	std::unique_ptr<Window> window = std::make_unique<Window>(640, 720, "My Window", *inputManager);
+	std::unique_ptr<Window> window = std::make_unique<Window>(1920, 1080, "My Window", *inputManager);
 
 
 	glm::vec3 cameraTarget = glm::vec3(0.0f, 0.0f, 0.0f);
@@ -55,7 +55,7 @@ int main(int argc, char* argv[])
 		camera->update();
 
 		//RENDERER WORK HERE
-		renderer->update(glm::vec3(0.0f, 0.0f, -2.5f), window->triOffset, glm::vec3(0.0f, 1.0f, 0.0f), glm::vec3(0.4f, 0.4f, 0.4f));
+		renderer->update();
 		//renderer->update(glm::vec3(0.0f, 0.0f, -2.5f), 45, glm::vec3(0.0f, window->triOffset, 0.0f), glm::vec3(0.4f, 0.4f, 1.0f));
 
 		//PHYSICS COMPUTATION HERE

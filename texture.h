@@ -6,7 +6,7 @@
 class Texture
 {
 public:
-	Texture(int width, int height, int nrCHannels, std::string imagePath);
+	Texture(const std::string& imagePath);
 	~Texture();
 
 	void bind(unsigned int unit = 0) const;

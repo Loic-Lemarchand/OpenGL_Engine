@@ -59,8 +59,6 @@ Shader::Shader(const char* vertexPath, const char* fragmentPath) : bIsValid(true
 
 	glDeleteShader(vertexShader);
 	glDeleteShader(fragmentShader);
-
-
 }
 
 Shader::~Shader()

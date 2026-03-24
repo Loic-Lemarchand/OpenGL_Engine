@@ -11,6 +11,7 @@ find_package(OpenGL REQUIRED)
 find_package(glfw3 CONFIG REQUIRED)
 find_package(glad CONFIG REQUIRED)
 find_package(glm CONFIG REQUIRED)
+find_package(assimp CONFIG REQUIRED)
 
 # ---- Executable ----
 add_executable(${PROJECT_NAME}
@@ -20,6 +21,7 @@ add_executable(${PROJECT_NAME}
     shader.cpp
     texture.cpp
     mesh.cpp
+    model.cpp
 
     utilities.cpp
     inputManager.cpp
@@ -32,6 +34,7 @@ add_executable(${PROJECT_NAME}
     shader.h
     texture.h
     mesh.h
+    model.h
 
     utilities.h
     inputManager.h
@@ -51,6 +54,7 @@ target_link_libraries(${PROJECT_NAME}
         glfw
         glad::glad
         glm::glm
+        assimp::assimp
 )
 
 # ---- Include dirs ----
