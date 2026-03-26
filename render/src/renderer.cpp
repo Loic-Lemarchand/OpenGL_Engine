@@ -40,10 +40,10 @@ void Renderer::createBuffers()
 {
 	
 
-	myShader = std::make_shared<Shader>("../vertexShader.glsl", "../fragmentShader.glsl");
+	myShader = std::make_shared<Shader>(PROJECT_ROOT_DIR"/render/vertexShader.glsl", PROJECT_ROOT_DIR"/render/fragmentShader.glsl");
 
 	std::shared_ptr<Model> Kitchen = std::make_shared<Model>();
-	Kitchen->Load("../Assets/k3/source/mistitown.fbx", myShader);
+	Kitchen->Load(PROJECT_ROOT_DIR"/Assets/k3/source/mistitown.fbx", myShader);
 	Kitchen->position = glm::vec3(0.0f, 0.0f, 0.0f);
 	Kitchen->scale = glm::vec3(0.001f);
 
