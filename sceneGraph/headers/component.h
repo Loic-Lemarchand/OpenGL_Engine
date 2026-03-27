@@ -13,7 +13,7 @@ class Shader;
 struct RenderProxy
 {
 	glm::mat4 modelMat;
-	std::weak_ptr<Model> model;
+	std::shared_ptr<Model> model;
 };
 
 class Component

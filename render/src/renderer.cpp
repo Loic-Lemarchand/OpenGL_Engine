@@ -107,12 +107,9 @@ void Renderer::update()
 		for (const auto renderProxy : renderProxies)
 		{
 			glUniformMatrix4fv(myUniformModel, 1, GL_FALSE, glm::value_ptr(renderProxy.modelMat));
-			std::weak_ptr<Model> model = renderProxy.model;
-			if (!model.expired())
-			{
-				std::shared_ptr<Model> modelShared = model.lock();
-				modelShared->Draw();
-			}
+			std::shared_ptr<Model> model = renderProxy.model;
+			if (model)
+				model->Draw();
 		}
 
 	glUseProgram(0);
