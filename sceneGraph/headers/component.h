@@ -1,0 +1,98 @@
+#pragma once
+
+#include "glm/glm.hpp"
+#include "glm/gtc/matrix_transform.hpp"
+#include <memory>
+#include <string>
+#include <vector>
+
+class Actor;
+class Model;
+class Shader;
+
+class Component
+{
+public:
+	Component();
+	~Component();
+
+	Actor* getOwner() { return myOwner; }
+	void setOwner(Actor* owner) { myOwner = owner; }
+
+	
+
+	bool isActive() { return bIsActive; }
+	bool isValid() { return bIsValid;  }
+	bool canRecurseTick() { return bCanRecurseTick; }
+	
+
+	void setActive(bool activation) { bIsActive = activation; }
+
+	virtual void Tick();
+protected:
+	
+	Actor* myOwner;
+
+	bool bIsActive;
+	bool bIsValid;
+
+
+	bool bCanRecurseTick;
+};
+
+class ActorComponent : public Component
+{
+
+};
+
+class SceneComponent : public ActorComponent, public std::enable_shared_from_this<SceneComponent>
+{
+public:
+	SceneComponent() : myPosition(0.0f), myScale(1.0f), myRotation(0.0f), myRotationAxis(0.0f) { bCanRecurseTick = true; }
+	SceneComponent(glm::vec3 position) : myPosition(position), myScale(1.0f), myRotation(0.0f), myRotationAxis(0.0f) { bCanRecurseTick = true; }
+
+	glm::vec3 getPosition() { return myPosition; }
+	float getRotation() { return myRotation; }
+	glm::vec3 getScale() { return myScale; }
+	glm::vec3 getRotationAxis() { return myRotationAxis; }
+
+	std::shared_ptr<SceneComponent> getParent() { return myParent; }
+	
+	void setPosition(glm::vec3 position) { myPosition = position; }
+	void setRotation(float rotation) { myRotation = rotation; }
+	void SetScale(glm::vec3 scale) { myScale = scale; }
+	void SetRotationAxis(glm::vec3 rotationAxis) { myRotationAxis = rotationAxis; }
+
+	void setParent(std::shared_ptr<SceneComponent> parent) { myParent = parent; }
+
+	glm::mat4 getWorldTransform();
+
+	void AddChild(std::shared_ptr<SceneComponent> child);
+
+	virtual void Tick() override;
+
+protected:
+	glm::vec3 myPosition;
+	glm::vec3 myScale;
+	float myRotation;
+	glm::vec3 myRotationAxis;
+
+	std::shared_ptr<SceneComponent> myParent;
+
+	std::vector<std::shared_ptr<SceneComponent>> myChildren;
+};
+
+class MeshComponent : public SceneComponent
+{
+public:
+	MeshComponent();
+	~MeshComponent();
+
+	void loadModelFromFile(const std::string& modelPath, std::shared_ptr<Shader> shader);
+	void setModel(Model* model);
+
+	Model* getModel() const { return myModel.get(); }
+private:
+	
+	std::unique_ptr<Model> myModel;
+};

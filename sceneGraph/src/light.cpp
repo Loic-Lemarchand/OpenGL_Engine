@@ -21,10 +21,9 @@ Light::~Light()
 
 // Point Light
 PointLight::PointLight(glm::vec3 color, float intensity, glm::vec3 position) :
-	Light(color, intensity),
-	myPosition(position)
+	Light(color, intensity)
 {
-
+	myPosition = position;
 }
 
 PointLight::~PointLight()

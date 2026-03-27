@@ -1,13 +1,13 @@
 #pragma once
 
-#include <glm/glm.hpp>
 #include <glad/glad.h>
+#include "component.h"
 
 #include "shader.h"
 
 
 
-class Light
+class Light : public SceneComponent
 {
 public:
 	Light(glm::vec3 color, float intensity);
@@ -41,10 +41,6 @@ public:
 
 	void applyUniforms(std::shared_ptr<Shader> shader, int index) override;
 
-
-protected:
-
-	glm::vec3 myPosition;
 
 private:
 

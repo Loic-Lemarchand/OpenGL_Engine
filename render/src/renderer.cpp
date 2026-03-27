@@ -3,7 +3,10 @@
 #include "shader.h"
 #include "camera.h"
 #include "texture.h"
+#include "component.h"
 #include "model.h"
+#include "world.h"
+#include "actor.h"
 
 
 #include <glm/gtc/matrix_transform.hpp>
@@ -11,7 +14,7 @@
 
 float toRadians = 3.14159265 / 180.0f;
 
-Renderer::Renderer(int frameBufferWidth, int frameBufferHeight, Camera* camera) :
+Renderer::Renderer(int frameBufferWidth, int frameBufferHeight, std::shared_ptr<Camera> camera) :
 	bIsValid(true),
 	myCamera(camera),
 	myShader(nullptr),
@@ -42,12 +45,6 @@ void Renderer::createBuffers()
 
 	myShader = std::make_shared<Shader>(PROJECT_ROOT_DIR"/render/vertexShader.glsl", PROJECT_ROOT_DIR"/render/fragmentShader.glsl");
 
-	std::shared_ptr<Model> Kitchen = std::make_shared<Model>();
-	Kitchen->Load(PROJECT_ROOT_DIR"/Assets/k3/source/mistitown.fbx", myShader);
-	Kitchen->position = glm::vec3(0.0f, 0.0f, 0.0f);
-	Kitchen->scale = glm::vec3(0.001f);
-
-	myModels.push_back(Kitchen);
 
 	// Ensure shader is valid before getting uniform location
 	if (myShader && myShader->bIsValid)
@@ -99,17 +96,17 @@ void Renderer::update()
 			glUniformMatrix4fv(myUniformView, 1, GL_FALSE, glm::value_ptr(view));
 		}
 
-		for (auto& model : myModels)
+		for (auto& actor : World::getWorld().getActors())
 		{
-			if (model)
+			for (auto& comp : actor->getComponents())
 			{
-				glm::mat4 modelMatrix{ 1.0f };
-				modelMatrix = glm::translate(modelMatrix, model->position);
-				modelMatrix = glm::rotate(modelMatrix, model->rotation * toRadians, model->rotationAxis);
-				modelMatrix = glm::scale(modelMatrix, model->scale);
-
-				glUniformMatrix4fv(myUniformModel, 1, GL_FALSE, glm::value_ptr(modelMatrix));
-				model->Draw();
+				auto* meshComp = dynamic_cast<MeshComponent*>(comp.get());
+				if (meshComp && meshComp->isActive() && meshComp->getModel())
+				{
+					glm::mat4 modelMatrix = meshComp->getWorldTransform();
+					glUniformMatrix4fv(myUniformModel, 1, GL_FALSE, glm::value_ptr(modelMatrix));
+					meshComp->getModel()->Draw();
+				}
 			}
 		}
 

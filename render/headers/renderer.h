@@ -15,12 +15,14 @@ class Renderer
 {
 public:
 	Renderer() = delete;
-	Renderer(int frameBufferWidth, int frameBufferHeight, Camera* camera);
+	Renderer(int frameBufferWidth, int frameBufferHeight, std::shared_ptr<Camera> camera);
 	~Renderer();
 
 	void update();
 	//It's okay to be public since not read internally
 	bool bIsValid;
+
+	std::shared_ptr<Shader> getShader() { return myShader; }
 
 private:
 
@@ -30,7 +32,7 @@ private:
 
 	void createBuffers();
 
-	Camera* myCamera;
+	std::shared_ptr<Camera> myCamera;
 
 	unsigned int myShaderProgram;
 

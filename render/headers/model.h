@@ -37,9 +37,6 @@ private:
 
 	std::vector<std::shared_ptr<Texture>>  loadMaterialTextures(aiMaterial* material, aiTextureType textureType);
 
-
-
-
 	std::vector<std::shared_ptr<Mesh>> myMeshes;
 
 	std::string locationDirectory;

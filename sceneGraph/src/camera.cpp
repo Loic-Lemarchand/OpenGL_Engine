@@ -1,9 +1,10 @@
 #include "camera.h"
 #include "utilities.h"
+#include "world.h"
 
-Camera::Camera(glm::vec3 startPosition, glm::vec3 startUp, GLfloat startYaw, GLfloat startPitch, GLfloat setMovementSpeed, GLfloat setTurnSpeed, EventDispatcher::EventBus& eventBus) :
+Camera::Camera(glm::vec3 startPosition, glm::vec3 startUp, GLfloat startYaw, GLfloat startPitch, GLfloat setMovementSpeed, GLfloat setTurnSpeed) :
 	bIsValid(true),
-	position(startPosition),
+	SceneComponent(startPosition),
 	up(startUp),
 	yaw(startYaw),
 	pitch(startPitch),
@@ -13,11 +14,13 @@ Camera::Camera(glm::vec3 startPosition, glm::vec3 startUp, GLfloat startYaw, GLf
 	right(0),
 	worldUp(startUp),
 	lastX(0.0f),
-	lastY(0.0f)
+	lastY(0.0f),
+	bFirstMove(true)
 {
-	eventBus.subscribe(EventDispatcher::KeyPressed, &Camera::onKeyBoardInput, this);
-	eventBus.subscribe(EventDispatcher::MouseMoved, &Camera::onMouseInput, this);
-	eventBus.subscribe(EventDispatcher::KeyReleased, &Camera::onKeyBoardRelease, this);
+	std::shared_ptr<EventDispatcher::EventBus> eventBus = World::getEventBus();
+	eventBus->subscribe(EventDispatcher::KeyPressed, &Camera::onKeyBoardInput, this);
+	eventBus->subscribe(EventDispatcher::MouseMoved, &Camera::onMouseInput, this);
+	eventBus->subscribe(EventDispatcher::KeyReleased, &Camera::onKeyBoardRelease, this);
 	update();
 }
 
@@ -44,22 +47,22 @@ void Camera::update()
 		switch (key)
 		{
 			case GLFW_KEY_W:
-				position += cameraSpeed * front;
+				myPosition += cameraSpeed * front;
 				break;
 			case GLFW_KEY_A:
-				position -= cameraSpeed * right;
+				myPosition -= cameraSpeed * right;
 				break;
 			case GLFW_KEY_S:
-				position -= cameraSpeed * front;
+				myPosition -= cameraSpeed * front;
 				break;
 			case GLFW_KEY_D:
-				position += cameraSpeed * right;
+				myPosition += cameraSpeed * right;
 				break;
 			case GLFW_KEY_E:
-				position += cameraSpeed * up;
+				myPosition += cameraSpeed * up;
 				break;
 			case GLFW_KEY_Q:
-				position -= cameraSpeed * up;
+				myPosition -= cameraSpeed * up;
 				break;
 			default:
 				break;
@@ -71,14 +74,15 @@ void Camera::update()
 
 glm::mat4 Camera::CalculateViewMatrix()
 {
-	return glm::lookAt(position, position + front, up);
+	viewMatrix = glm::lookAt(myPosition, myPosition + front, up);
+	return viewMatrix;
 }
 
 
 void Camera::onKeyBoardInput(int key)
 {
 	keysDown.insert(key);
-	utilities::log("Camera position is : x = " + std::to_string(position.x) + " y = " + std::to_string(position.y) + " z = " + std::to_string(position.z));
+	utilities::log("Camera position is : x = " + std::to_string(myPosition.x) + " y = " + std::to_string(myPosition.y) + " z = " + std::to_string(myPosition.z));
 }
 
 void Camera::onKeyBoardRelease(int key)
@@ -88,11 +92,11 @@ void Camera::onKeyBoardRelease(int key)
 
 void Camera::onMouseInput(double x, double y)
 {
-	if (firstMove)
+	if (bFirstMove)
 	{
 		lastX = x;
 		lastY = y;
-		firstMove = false;
+		bFirstMove = false;
 	}
 
 	float xOffset =  x - lastX;
@@ -113,4 +117,27 @@ void Camera::onMouseInput(double x, double y)
 		pitch = -89.0f;
 
 	utilities::log("Camera rotation is : yaw = " + std::to_string(yaw) + " pitch = " + std::to_string(pitch));
+}
+
+ACamera::ACamera()
+{
+	myCameraComponent = addComponent<Camera>(
+		glm::vec3(0.0f, 0.0f, 3.0f),
+		glm::vec3(0.0f, 1.0f, 0.0f),
+		-90.0f, 0.0f, 2.0f, 0.1f
+	);
+}
+
+ACamera::~ACamera()
+{
+
+}
+
+void ACamera::Tick()
+{
+	Actor::Tick();
+	if (myCameraComponent)
+	{
+		myCameraComponent->update();
+	}
 }

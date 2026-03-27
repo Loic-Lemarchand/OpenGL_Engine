@@ -4,41 +4,53 @@
 #include <memory>
 #include "inputManager.h"
 #include "camera.h"
+#include "world.h"
 
+
+class ATown : public Actor
+{
+public:
+	ATown(std::shared_ptr<Shader> shader)
+	{
+		auto meshComponent = addComponent<MeshComponent>();
+		meshComponent->loadModelFromFile(PROJECT_ROOT_DIR"/Assets/k3/source/mistitown.fbx", shader);
+		setPosition(glm::vec3(0.0f, 0.0f, 0.0f));
+		SetScale(glm::vec3(0.001f));
+	};
+	~ATown(){}
+
+private:
+};
 
 int main(int argc, char* argv[])
 {
 
 	
-	std::unique_ptr<Renderer> renderer = nullptr;
-	std::unique_ptr<EventDispatcher::EventBus> eventBus = std::make_unique<EventDispatcher::EventBus>();
+	std::shared_ptr<EventDispatcher::EventBus> eventBus = std::make_shared<EventDispatcher::EventBus>();
+	World::setEventBus(eventBus);
 	std::unique_ptr<InputManager> inputManager = std::make_unique<InputManager>(*eventBus);
 	std::unique_ptr<Window> window = std::make_unique<Window>(1920, 1080, "My Window", *inputManager);
+	World& world = World::getWorld();
 
-
-	glm::vec3 cameraTarget = glm::vec3(0.0f, 0.0f, 0.0f);
-	glm::vec3 cameraPosition = glm::vec3(0.0f, 0.0f, 3.0f);
-	glm::vec3 cameraDirection = -glm::normalize(cameraPosition - cameraTarget);
-
-	// calculer pitch et yaw à partir de la direction
-	float initPitch = glm::degrees(asin(cameraDirection.y));
-	float initYaw = glm::degrees(atan2(cameraDirection.z, cameraDirection.x));
-
-	//glm::cross(glm::vec3(1.0f, 0.0f, 0.0f), -cameraDirection) start up
-	std::unique_ptr<Camera> camera = std::make_unique<Camera>(cameraPosition, glm::vec3(0.0f, 1.0f, 0.0f), initYaw, initPitch, 2.0f, .1f, *eventBus);
-
+	std::shared_ptr<ACamera> cameraActor = world.spawnActor<ACamera>();
+	
 
 	if (!window->bIsValid)
 	{
 		utilities::log("Window is not valid");
+		return -1;
 	}
 
-	renderer = std::make_unique<Renderer>(window->getFrameBufferWidth(), window->getFrameBufferHeight(), camera.get());
+	auto renderer = std::make_unique<Renderer>(window->getFrameBufferWidth(), window->getFrameBufferHeight(), cameraActor->getCameraComponent());
 
 	if (!renderer->bIsValid)
 	{
 		utilities::log("Renderer is not valid");
+		return -1;
 	}
+
+	world.spawnActor<ATown>(renderer->getShader());
+
 
 	while (!window->shoudClose() && window->bIsValid)
 	{
@@ -52,13 +64,16 @@ int main(int argc, char* argv[])
 		//EVENT BUS POLLING
 		eventBus->dispatchEvents();
 
-		camera->update();
+		world.Tick();
 
 		//RENDERER WORK HERE
 		renderer->update();
 		//renderer->update(glm::vec3(0.0f, 0.0f, -2.5f), 45, glm::vec3(0.0f, window->triOffset, 0.0f), glm::vec3(0.4f, 0.4f, 1.0f));
 
 		//PHYSICS COMPUTATION HERE
+		
 	}
+
+	return 0;
 
 }
