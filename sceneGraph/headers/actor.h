@@ -44,6 +44,9 @@ public:
 		
 	}
 
+	void collectRenderProxies(std::vector<RenderProxy>& outProxies);
+	void collectFromComponent(const SceneComponent& comp, std::vector<RenderProxy>& outProxies);
+
 protected:
 	glm::vec3 myPosition;
 	glm::vec3 myScale;

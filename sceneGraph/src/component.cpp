@@ -32,7 +32,7 @@ void SceneComponent::Tick()
 	}
 }
 
-glm::mat4 SceneComponent::getWorldTransform()
+glm::mat4 SceneComponent::getWorldTransform() const
 {
 	glm::mat4 local = glm::mat4(1.0f);
 	local = glm::translate(local, myPosition);
@@ -80,4 +80,13 @@ void MeshComponent::loadModelFromFile(const std::string& modelPath, std::shared_
 void MeshComponent::setModel(Model* model)
 {
 	myModel.reset(model);
+}
+
+bool MeshComponent::getRenderProxy(RenderProxy& proxy) const
+{
+	if (!myModel || !bIsActive)
+		return false;
+	proxy.modelMat = getWorldTransform();
+	proxy.model = myModel;
+	return true;
 }

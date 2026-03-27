@@ -74,6 +74,14 @@ void Renderer::createBuffers()
 
 void Renderer::update()
 {
+	//We use render proxies to decouple scene graph and rendering 
+	std::vector<RenderProxy> renderProxies;
+	for (auto& actor : World::getWorld().getActors())
+	{
+		if (actor)
+			actor->collectRenderProxies(renderProxies);
+	}
+
 	glClearColor(0.10f, 0.12f, 0.18f, 1.0f);
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
@@ -96,17 +104,14 @@ void Renderer::update()
 			glUniformMatrix4fv(myUniformView, 1, GL_FALSE, glm::value_ptr(view));
 		}
 
-		for (auto& actor : World::getWorld().getActors())
+		for (const auto renderProxy : renderProxies)
 		{
-			for (auto& comp : actor->getComponents())
+			glUniformMatrix4fv(myUniformModel, 1, GL_FALSE, glm::value_ptr(renderProxy.modelMat));
+			std::weak_ptr<Model> model = renderProxy.model;
+			if (!model.expired())
 			{
-				auto* meshComp = dynamic_cast<MeshComponent*>(comp.get());
-				if (meshComp && meshComp->isActive() && meshComp->getModel())
-				{
-					glm::mat4 modelMatrix = meshComp->getWorldTransform();
-					glUniformMatrix4fv(myUniformModel, 1, GL_FALSE, glm::value_ptr(modelMatrix));
-					meshComp->getModel()->Draw();
-				}
+				std::shared_ptr<Model> modelShared = model.lock();
+				modelShared->Draw();
 			}
 		}
 

@@ -10,6 +10,12 @@ class Actor;
 class Model;
 class Shader;
 
+struct RenderProxy
+{
+	glm::mat4 modelMat;
+	std::weak_ptr<Model> model;
+};
+
 class Component
 {
 public:
@@ -65,11 +71,14 @@ public:
 
 	void setParent(std::shared_ptr<SceneComponent> parent) { myParent = parent; }
 
-	glm::mat4 getWorldTransform();
+	glm::mat4 getWorldTransform() const;
 
 	void AddChild(std::shared_ptr<SceneComponent> child);
+	std::vector<std::shared_ptr<SceneComponent>> getChildrenComps() const { return myChildren; }
 
 	virtual void Tick() override;
+
+	virtual bool getRenderProxy(RenderProxy& proxy) const { return false; }
 
 protected:
 	glm::vec3 myPosition;
@@ -91,8 +100,11 @@ public:
 	void loadModelFromFile(const std::string& modelPath, std::shared_ptr<Shader> shader);
 	void setModel(Model* model);
 
-	Model* getModel() const { return myModel.get(); }
+	std::shared_ptr<Model> getModel() const { return myModel; }
+
+	virtual bool getRenderProxy(RenderProxy& proxy) const override;
+
 private:
 	
-	std::unique_ptr<Model> myModel;
+	std::shared_ptr<Model> myModel;
 };
