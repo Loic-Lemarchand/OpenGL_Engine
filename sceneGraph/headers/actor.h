@@ -30,7 +30,7 @@ public:
 	const std::vector<std::shared_ptr<Component>>& getComponents() const { return myComponents; }
 
 	template<typename T, typename... Args>
-	std::shared_ptr<T> addComponent(Args&&... args)
+	std::shared_ptr<T> addSceneComponent(Args&&... args)
 	{
 		auto comp = std::make_shared<T>(std::forward<Args>(args)...);
 		comp->setOwner(this);
@@ -42,6 +42,16 @@ public:
 		myComponents.push_back(comp);
 		return comp;
 		
+	}
+
+	template<typename T, typename... Args>
+	std::shared_ptr<T> addActorComponent(Args&&... args)
+	{
+		auto comp = std::make_shared<T>(std::forward<Args>(args)...);
+		comp->setOwner(this);
+		comp->setActive(true);
+		myComponents.push_back(comp);
+		return comp;
 	}
 
 	void collectRenderProxies(std::vector<RenderProxy>& outProxies);

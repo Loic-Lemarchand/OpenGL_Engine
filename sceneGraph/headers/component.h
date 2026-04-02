@@ -57,12 +57,12 @@ public:
 	SceneComponent() : myPosition(0.0f), myScale(1.0f), myRotation(0.0f), myRotationAxis(0.0f) { bCanRecurseTick = true; }
 	SceneComponent(glm::vec3 position) : myPosition(position), myScale(1.0f), myRotation(0.0f), myRotationAxis(0.0f) { bCanRecurseTick = true; }
 
-	glm::vec3 getPosition() { return myPosition; }
-	float getRotation() { return myRotation; }
-	glm::vec3 getScale() { return myScale; }
-	glm::vec3 getRotationAxis() { return myRotationAxis; }
+	glm::vec3 getPosition() const { return myPosition; }
+	float getRotation() const { return myRotation; }
+	glm::vec3 getScale() const { return myScale; }
+	glm::vec3 getRotationAxis() const { return myRotationAxis; }
 
-	std::shared_ptr<SceneComponent> getParent() { return myParent; }
+	std::shared_ptr<SceneComponent> getParent() const { return myParent; }
 	
 	void setPosition(glm::vec3 position) { myPosition = position; }
 	void setRotation(float rotation) { myRotation = rotation; }

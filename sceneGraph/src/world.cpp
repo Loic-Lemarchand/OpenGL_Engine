@@ -17,6 +17,9 @@ void World::Tick()
 	{
 		actor->Tick();
 	}
+
+	// Fixed physics timestep
+	myPhysicsWorld.Step(1.0f / 60.0f);
 }
 
 void World::Render()

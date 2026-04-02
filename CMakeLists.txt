@@ -22,6 +22,10 @@ file(GLOB_RECURSE RENDER_SOURCES CONFIGURE_DEPENDS
     "${CMAKE_CURRENT_SOURCE_DIR}/render/*"
 )
 
+file(GLOB_RECURSE PHYSICS_SOURCES CONFIGURE_DEPENDS
+    "${CMAKE_CURRENT_SOURCE_DIR}/physics/*"
+)
+
 file(GLOB_RECURSE SRC_SOURCES CONFIGURE_DEPENDS
     "${CMAKE_CURRENT_SOURCE_DIR}/src/*"
 )
@@ -37,10 +41,12 @@ add_executable(${PROJECT_NAME}
     ${HEADER_SOURCES}
     ${SCENE_GRAPH_SOURCES}
     ${RENDER_SOURCES}
+    ${PHYSICS_SOURCES}
 )
 
 # ---- VS groups ----
 source_group(TREE ${CMAKE_CURRENT_SOURCE_DIR}/render PREFIX "Render" FILES ${RENDER_SOURCES})
+source_group(TREE ${CMAKE_CURRENT_SOURCE_DIR}/physics PREFIX "Physics" FILES ${PHYSICS_SOURCES})
 source_group(TREE ${CMAKE_CURRENT_SOURCE_DIR}/sceneGraph PREFIX "SceneGraph" FILES ${SCENE_GRAPH_SOURCES})
 source_group(TREE ${CMAKE_CURRENT_SOURCE_DIR}/src PREFIX "Src" FILES ${SRC_SOURCES})
 source_group(TREE ${CMAKE_CURRENT_SOURCE_DIR}/headers PREFIX "Headers" FILES ${HEADER_SOURCES})
@@ -67,6 +73,9 @@ target_include_directories(${PROJECT_NAME}
         ${CMAKE_CURRENT_SOURCE_DIR}/render/src
         ${CMAKE_CURRENT_SOURCE_DIR}/src
         ${CMAKE_CURRENT_SOURCE_DIR}/headers
+        ${CMAKE_CURRENT_SOURCE_DIR}/physics
+        ${CMAKE_CURRENT_SOURCE_DIR}/physics/headers
+        ${CMAKE_CURRENT_SOURCE_DIR}/physics/src
 )
 
 target_compile_definitions(${PROJECT_NAME} PRIVATE

@@ -2,6 +2,7 @@
 
 #include <vector>
 #include <memory>
+#include "physicsWorld.h"
 
 class Actor;
 namespace EventDispatcher 
@@ -25,8 +26,8 @@ public:
 
 	static World& getWorld() 
 	{ 
-	    static World instance;
-	    return instance; 
+		static World instance;
+		return instance; 
 	}
 
 	template<typename T, typename... Args>
@@ -37,10 +38,12 @@ public:
 	}
 
 	std::vector<std::shared_ptr<Actor>>& getActors() { return myActors; }
-	
+	PhysicsWorld& getPhysicsWorld() { return myPhysicsWorld; }
+
 private:
 	World();
 
 	std::vector<std::shared_ptr<Actor>> myActors;
 	static std::shared_ptr<EventDispatcher::EventBus> myEventBus;
+	PhysicsWorld myPhysicsWorld;
 };

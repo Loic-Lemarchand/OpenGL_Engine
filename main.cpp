@@ -5,6 +5,7 @@
 #include "inputManager.h"
 #include "camera.h"
 #include "world.h"
+#include "physicsComponent.h"
 
 
 class ATown : public Actor
@@ -12,12 +13,39 @@ class ATown : public Actor
 public:
 	ATown(std::shared_ptr<Shader> shader)
 	{
-		auto meshComponent = addComponent<MeshComponent>();
+		auto meshComponent = addSceneComponent<MeshComponent>();
 		meshComponent->loadModelFromFile(PROJECT_ROOT_DIR"/Assets/k3/source/mistitown.fbx", shader);
 		setPosition(glm::vec3(0.0f, 0.0f, 0.0f));
 		SetScale(glm::vec3(0.001f));
+
+		auto rigidBody = addActorComponent<RigidBodyComponent>(bodyType::Static, 0.0);
+		auto collider = std::make_shared<ColliderComponent>(glm::vec3(0.0f), ShapeType::Plane, PlaneShape{ glm::vec3(0.0f, 1.0f, 0.0f), 0.0f });
+		rigidBody->setColliderComponent(collider);
+
+		World::getWorld().getPhysicsWorld().registerRigidBody(rigidBody, getRootComponent());
 	};
 	~ATown(){}
+
+private:
+};
+
+class ACrate : public Actor
+{
+public:
+	ACrate(std::shared_ptr<Shader> shader)
+	{
+		auto meshComponent = addSceneComponent<MeshComponent>();
+		meshComponent->loadModelFromFile(PROJECT_ROOT_DIR"/Assets/woodenCrate/Wooden_Crate.fbx", shader);
+		setPosition(glm::vec3(0.0f, 10.0f, 0.0f));
+		SetScale(glm::vec3(0.001f));
+
+		auto rigidBody = addActorComponent<RigidBodyComponent>(bodyType::Dynamic, 1.0);
+		auto collider = std::make_shared<ColliderComponent>(glm::vec3(0.0f, 10.0f, 0.0f), ShapeType::Box, BoxShape{ glm::vec3(0.5f) });
+		rigidBody->setColliderComponent(collider);
+
+		World::getWorld().getPhysicsWorld().registerRigidBody(rigidBody, getRootComponent());
+	};
+	~ACrate(){}
 
 private:
 };
@@ -50,6 +78,7 @@ int main(int argc, char* argv[])
 	}
 
 	world.spawnActor<ATown>(renderer->getShader());
+	world.spawnActor<ACrate>(renderer->getShader());
 
 
 	while (!window->shoudClose() && window->bIsValid)
