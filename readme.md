@@ -1,69 +1,64 @@
 # OPENGL_Engine
 
-Moteur graphique 3D temps réel en **C++20** avec **OpenGL**, intégrant un scene graph inspiré d'Unreal Engine, un système d'événements découplé (Event Bus) et un moteur physique rigid-body.
+Real-time 3D graphics engine in **C++20** using **OpenGL**, featuring a scene graph inspired by Unreal Engine, a decoupled event system (Event Bus), and a rigid-body physics engine.
 
 ---
 
-## Table des matières
+## Table of Contents
 
-- [Dépendances](#dépendances)
+- [Dependencies](#dependencies)
 - [Build](#build)
-- [Architecture des fichiers](#architecture-des-fichiers)
-- [Boucle de jeu](#boucle-de-jeu)
-- [Scene Graph (ECS inspiré Unreal)](#scene-graph)
+- [File Architecture](#file-architecture)
+- [Game Loop](#game-loop)
+- [Scene Graph (Unreal-inspired ECS)](#scene-graph)
 - [Event Bus](#event-bus)
-- [Moteur physique](#moteur-physique)
-- [Rendu](#rendu)
-- [Input](#input)
-- [Diagramme global](#diagramme-global)
+- [Physics Engine](#physics-engine)
+- [Rendering](#rendering)
+- [Inputs](#inputs)
 - [TODO / Roadmap](#todo--roadmap)
+- [Global Diagram](#global-diagram)
 
 ---
 
-## Dépendances
+## Dependencies
 
-| Bibliothèque | Rôle | Gestion |
+| Library | Role | Management |
 |---|---|---|
-| **OpenGL** | API graphique | Système |
-| **GLFW 3** | Fenêtrage, contexte GL, inputs | vcpkg |
-| **GLAD** | Chargement des fonctions OpenGL | vcpkg |
-| **GLM** | Mathématiques (vecteurs, matrices) | vcpkg |
-| **Assimp** | Import de modèles 3D (FBX, OBJ…) | vcpkg |
-| **stb_image** | Chargement de textures (PNG, JPG…) | Header-only inclus |
+| **OpenGL** | Graphics API | System |
+| **GLFW 3** | Windowing, GL context, input | vcpkg |
+| **GLAD** | OpenGL function loading | vcpkg |
+| **GLM** | Mathematics (vectors, matrices) | vcpkg |
+| **Assimp** | 3D model import (FBX, OBJ…) | vcpkg |
+| **stb_image** | Texture loading (PNG, JPG…) | Header-only included |
 
 ---
 
 ## Build
 
 ```bash
-# Prérequis : CMake >= 3.21, vcpkg avec les paquets ci-dessus
 cmake -B out/build -S . -DCMAKE_TOOLCHAIN_FILE=[vcpkg-root]/scripts/buildsystems/vcpkg.cmake
 cmake --build out/build --config Release
 ```
 
-Ou ouvrir directement le dossier dans **Visual Studio** (CMake natif).
-
 ---
 
-## Architecture des fichiers
-
-```
+## File Architecture
 OPENGL_Engine/
-├── main.cpp                       # Point d'entrée, boucle de jeu
-├── CMakeLists.txt                 # Configuration CMake (C++20)
-├── headers/                       # En-têtes globaux
-│   ├── eventBus.h                 #   Système Publish/Subscribe
-│   ├── inputManager.h             #   Gestion des inputs clavier/souris
-│   ├── window.h                   #   Fenêtre GLFW
+├── main.cpp                       # Entry point, game loop
+├── CMakeLists.txt                 # CMake configuration (C++20)
+├── headers/                       # Global headers
+│   ├── eventBus.h                 #   Publish/Subscribe system
+│   ├── inputManager.h             #   Keyboard/mouse input handling
+│   ├── window.h                   #   GLFW window
 │   └── utilities.h                #   Logs, globals (deltaTime)
-├── src/                           # Implémentations globales
+├── src/                           # Global implementations
 │   ├── eventBus.cpp
 │   ├── inputManager.cpp
 │   └── window.cpp
 ├── sceneGraph/                    # Scene Graph & ECS
 │   ├── headers/
-│   │   ├── world.h                #   Singleton World (acteurs + physique)
-│   │   ├── actor.h                #   Entité de base (Actor)
+│   │   ├── world.h                #   World singleton (actors + physics)
+│   │   ├── actor.h                #   Base entity (Actor)
 │   │   ├── component.h            #   Component, SceneComponent, MeshComponent
 │   │   └── camera.h               #   Camera + ACamera
 │   └── src/
@@ -71,196 +66,160 @@ OPENGL_Engine/
 │       ├── actor.cpp
 │       ├── component.cpp
 │       └── camera.cpp
-├── render/                        # Pipeline de rendu OpenGL
+├── render/                        # OpenGL rendering pipeline
 │   ├── headers/
-│   │   ├── renderer.h             #   Orchestrateur du rendu
-│   │   ├── shader.h               #   Compilation vertex/fragment shaders
-│   │   ├── model.h                #   Chargement de modèles (Assimp)
+│   │   ├── renderer.h             #   Rendering orchestrator
+│   │   ├── shader.h               #   Vertex/fragment shader compilation
+│   │   ├── model.h                #   Model loading (Assimp)
 │   │   ├── mesh.h                 #   VAO/VBO/IBO, vertices, draw calls
-│   │   ├── texture.h              #   Textures OpenGL
-│   │   └── light.h                #   Éclairage (Ambient + PointLight)
+│   │   ├── texture.h              #   OpenGL textures
+│   │   └── light.h                #   Lighting (Ambient + PointLight)
 │   └── src/
-├── physics/                       # Moteur physique rigid-body
+├── physics/                       # Rigid-body physics engine
 │   ├── headers/
-│   │   ├── physicsWorld.h         #   Simulation (Step, détection, résolution)
-│   │   └── physicsComponent.h     #   RigidBody, Collider, formes géométriques
+│   │   ├── physicsWorld.h         #   Simulation (Step, detection, resolution)
+│   │   └── physicsComponent.h     #   RigidBody, Collider, geometric shapes
 │   └── src/
 │       ├── physicsWorld.cpp
 │       └── physicsComponent.cpp
-└── Assets/                        # Modèles 3D (FBX)
-```
+└── Assets/                        # 3D models (FBX)
 
 ---
 
-## Boucle de jeu
+## Game Loop
 
-Définie dans `main.cpp`, la boucle suit le schéma classique **Input → Événements → Logique/Physique → Rendu** :
-
-```
-while (!window->shouldClose())
-│
-├─ 1. window->update()              // glfwPollEvents → callbacks GLFW
-│     └─ InputManager pousse les événements dans l'EventBus
-│
-├─ 2. eventBus->dispatchEvents()    // Distribue les événements aux abonnés
-│     └─ Appelle les callbacks (Camera, Window…) puis vide la file
-│
-├─ 3. world.Tick()
-│     ├─ Actor::Tick() pour chaque acteur (ex: Camera met à jour la vue)
-│     └─ PhysicsWorld::Step(1/60)
-│         ├─ Gravité + Intégration
-│         ├─ Détection de collision (Broadphase AABB + Narrowphase)
-│         └─ Résolution (correction de position + impulsion)
-│
-└─ 4. renderer->update()            // Collecte les RenderProxies → OpenGL draw
-```
+Input → Events → Logic/Physics → Rendering
 
 ---
 
 ## Scene Graph
 
-Hiérarchie de composants attachés à des **Actors**, inspirée d'Unreal Engine :
-
-```
 Actor
-├── RootComponent (SceneComponent)     ← Racine du graphe de transformation
-│   ├── MeshComponent                  ← Modèle 3D (enfant)
-│   └── autres SceneComponents...
-└── ActorComponents[]                  ← Composants logiques sans transform
-    └── RigidBodyComponent             ← Physique (masse, vitesse, forces)
-        └── ColliderComponent (possédé)
-```
-
-| Classe | Hérite de | Rôle |
-|---|---|---|
-| `Component` | — | Base : owner, active, valid |
-| `ActorComponent` | `Component` | Composants logiques sans transformation |
-| `SceneComponent` | `ActorComponent` | Position, rotation, scale + arbre parent/enfants |
-| `MeshComponent` | `SceneComponent` | Contient un `Model`, fournit un `RenderProxy` |
-| `Camera` | `SceneComponent` | Vue FPS (yaw/pitch), matrice de vue |
-| `RigidBodyComponent` | `ActorComponent` | Masse, vitesse, forces, type de corps |
-| `ColliderComponent` | `SceneComponent` | Forme géométrique (`variant<Box, Sphere, Plane>`) |
-
-Le **Tick** est récursif : `Actor::Tick()` → `RootComponent::Tick()` → propage aux enfants, puis tick les `ActorComponent` non présents dans le graphe.
+├── RootComponent (SceneComponent)     ← Root of the transform graph
+│   ├── MeshComponent                  ← 3D model (child)
+│   └── other SceneComponents...
+└── ActorComponents[]                  ← Logical components without transform
+    └── RigidBodyComponent             ← Physics (mass, velocity, forces)
+        └── ColliderComponent (owned)
 
 ---
 
 ## Event Bus
 
-Système **Publish/Subscribe** découplé (`eventBus.h` / `eventBus.cpp`).
+Decoupled Publish/Subscribe system (`eventBus.h` / `eventBus.cpp`).
 
-### Fonctionnement
+### How it works
 
-1. **Producteurs** (ex: `InputManager`) poussent des événements dans la file via `pushEvent(makeEvent(type, name, args...))`
-2. **Chaque frame**, `dispatchEvents()` itère sur la file, appelle les callbacks enregistrés par `EventType`, puis vide la file
-3. **Abonnés** s'enregistrent via `subscribe()`
+1. **Producers** (e.g., `InputManager`) push events into the queue via  
+   `pushEvent(makeEvent(type, name, args...))`
 
-### Événements disponibles (bitmask)
+2. Each frame, `dispatchEvents()` iterates over the queue, calls callbacks registered by `EventType`, then clears the queue
 
-| EventType | Payload | Consommateurs |
-|---|---|---|
-| `KeyPressed` | `int` (code touche) | Camera, Window |
-| `KeyReleased` | `int` | Camera, Window |
-| `MouseMoved` | `double, double` (x, y) | Camera, Window |
-| `WindowResized` | `int, int` (w, h) | — |
+3. Subscribers register via `subscribe()`
 
-### Surcharges de `subscribe`
+### Available Events (bitmask)
+
+| EventType   | Payload           | Consumers       |
+|------------|------------------|-----------------|
+| `KeyPressed`  | `int` (key code) | Camera, Window  |
+| `KeyReleased` | `int`            |                 |
+
+
+### `subscribe` overloads
 
 ```cpp
 // Lambda / std::function
 eventBus->subscribe(type, [](const Event& e) { ... });
 
-// Méthode membre + raw pointer (dépaquetage automatique du payload)
+// Member function + raw pointer
 eventBus->subscribe(EventType::KeyPressed, &Camera::onKeyBoardInput, this);
 
-// Méthode membre + shared_ptr (sécurisé via weak_ptr interne)
+// Member function + shared_ptr (safe via internal weak_ptr)
 eventBus->subscribe(type, &MyClass::onEvent, sharedInstance);
-```
-
-Les surcharges template utilisent `dynamic_cast<const PayloadEvent<Args...>*>` + `std::apply` pour appeler directement la méthode membre avec les arguments dépaquetés.
 
 ---
 
-## Moteur physique
+## Physics Engine
 
-Simulation rigid-body à pas fixe (1/60 s), dans `physicsWorld.cpp` / `physicsComponent.cpp`.
+Rigid-body simulation with fixed timestep (1/60 s).
 
-### Types de corps (`bodyType`)
+### Body types
 
-| Type | Comportement |
-|---|---|
-| `Static` | Immobile, masse inverse = 0 |
-| `Dynamic` | Soumis à la gravité et aux collisions |
-| `Sleeping` | Dynamique au repos (vitesse < seuil), réveillé par collision |
+| Type      | Behavior                                      |
+|-----------|-----------------------------------------------|
+| `Static`  | Immovable, inverse mass = 0                   |
+| `Dynamic` | Affected by gravity and collisions            |
+| `Sleeping`| At rest (velocity < threshold), wakes on collision |
 
-### Formes de collision (`std::variant<BoxShape, SphereShape, PlaneShape>`)
+### Collision shapes
 
-| Forme | Données |
-|---|---|
-| `SphereShape` | `float radius` |
-| `BoxShape` | `vec3 halfExtents` |
-| `PlaneShape` | `vec3 normal, float offset` |
+| Shape         | Data                         |
+|---------------|------------------------------|
+| `SphereShape` | `float radius`               |
+| `BoxShape`    | `vec3 halfExtents`           |
+| `PlaneShape`  | `vec3 normal, float offset`  |
 
-### Intégration (`RigidBodyComponent::Integrate`)
+### Integration
 
-Euler semi-implicite :
+Semi-implicit Euler:
 
-```
-accélération  = forceRésultante × masseInverse
-vitesse      += accélération × dt
-vitesse      *= damping^dt                       // friction aérodynamique (0.99)
-position     += vitesse × dt
-```
+```cpp
+acceleration = force x inverseMass
+velocity     += acceleration x dt
+velocity     *= damping^dt
+position     += velocity x dt
 
-### Pipeline de collision
+### Collision pipeline 
 
-```
 Broadphase (AABB overlap)
-    │ non → skip
-    ▼ oui
-Narrowphase (test géométrique précis)
-    ├─ Sphere vs Sphere : distance entre centres < somme des rayons
-    ├─ Box vs Box       : SAT simplifié (3 axes, moindre pénétration)
-    ├─ Sphere vs Plane  : distance signée < rayon
-    └─ Box vs Plane     : projection des demi-extensions sur la normale
-    ▼
-Correction de position (avec slop anti-jitter de 0.01)
-    ▼
-Résolution d'impulsion :
-    j = -(1 + restitution) × dot(vRel, n) / (1/mA + 1/mB)
-    vA += j × n / mA
-    vB -= j × n / mB
-```
+    | no -> skip
+    | yes
+    v
+Narrowphase (precise test)
+    v
+Position correction (anti-jitter slop)
+    v
+Impulse resolution
 
 ---
 
-## Rendu
+## Rendering
 
-Pipeline OpenGL forward défini dans `renderer.cpp` :
+Forward OpenGL pipeline:
 
-1. **Chargement** : `Model::Load()` via Assimp → arbre de nœuds → `Mesh` (VAO/VBO/IBO) + textures
-2. **Collecte** : `Actor::collectRenderProxies()` parcourt le scene graph ; chaque `MeshComponent` fournit un `RenderProxy` (matrice monde + modèle)
-3. **Draw** : pour chaque proxy → bind shader, upload matrices (Model, View, Projection), éclairage (Ambient + PointLight), `glDrawElements`
-
----
-
-## Input
-
-```
-GLFW callbacks (statiques)
-    ├─ key_callback   → InputManager::processKey(key, action)
-    └─ HandleMouse    → InputManager::processMouse(xPos, yPos)
-                              │
-                   pushEvent(makeEvent(...)) → EventBus
-```
-
-`InputManager` transforme les callbacks GLFW bruts en événements typés (`KeyPressedEvent`, `MouseEvent`) et les pousse dans l'`EventBus`.
+1. Load models via Assimp → Mesh (VAO/VBO/IBO)
+2. Traverse scene graph → collect RenderProxies
+3. Draw each proxy with Model/View/Projection + lighting
 
 ---
 
-## Diagramme global
+## Inputs
 
-```mermaid
+
+    GLFW callbacks
+     ├─ key_callback → InputManager::processKey
+     └─ mouse        → InputManager::processMouse
+                            |
+                    pushEvent(...) → EventBus
+
+---
+
+## TODO / Roadmap
+
+- Angular physics
+- Multi-contact collisions
+- Spatial partitioning
+- Sphere vs Box collision
+- Friction
+- EventBus unsubscribe
+- Advanced lighting
+- Center of mass calculation
+
+
+## Global diagram
+
+
+mermaid
 flowchart TD
     subgraph INIT["🚀 Initialization (main.cpp)"]
         M1["main()"] --> M2["Create EventBus"]
@@ -317,7 +276,7 @@ flowchart TD
 
                 P1 --> P2
 
-                subgraph P2["Collision detection & resolution"]
+                subgraph P2["Collision detection &amp; resolution"]
                     direction TB
                     C1["For each pair (A, B)\ndeduplication by address"]
                     C1 --> C2["Broadphase: AABB overlap?"]
@@ -330,7 +289,7 @@ flowchart TD
                     C6 --> C7["Wake sleeping objects\nif impact is sufficient"]
                 end
 
-                P2 --> P3["Set to Sleeping\nif velocity < threshold"]
+                P2 --> P3["Set to Sleeping\nif velocity &lt; threshold"]
             end
         end
 
@@ -352,7 +311,7 @@ flowchart TD
         AC --> RB["RigidBodyComponent\n(mass, velocity, forces,\nbodyType)"]
         SC --> MC["MeshComponent\n(Model, RenderProxy)"]
         SC --> CAM["Camera\n(view, yaw, pitch)"]
-        SC --> COL["ColliderComponent\n(ShapeData = variant<\nBoxShape, SphereShape,\nPlaneShape>)"]
+        SC --> COL["ColliderComponent\n(ShapeData = variant&lt;\nBoxShape, SphereShape,\nPlaneShape&gt;)"]
         RB -.->|"owns"| COL
         ACT["Actor\n(RootComponent,\nComponents[])"] -->|"contains"| SC
         ACT -->|"contains"| AC
@@ -361,19 +320,5 @@ flowchart TD
     subgraph EVBUS["📨 Event Bus (Publish / Subscribe)"]
         direction LR
         IM["InputManager"] -->|"pushEvent(\nmakeEvent(type, args...))"| EB["EventBus\nmyEventQueue[]"]
-        EB -->|"dispatchEvents()\n→ callbacks by type"| SUB["Subscribers\n(lambdas, &Class::Method)"]
+        EB -->|"dispatchEvents()\n→ callbacks by type"| SUB["Subscribers\n(lambdas, &amp;Class::Method)"]
     end
-```
-
----
-
-## TODO / Roadmap
-
-- [ ] **Physique angulaire** — Torques, tenseur d'inertie, vitesse angulaire
-- [ ] **Multi-contact** — `CollisionManyFold` est préparé pour plusieurs points de contact, mais un seul est généré actuellement
-- [ ] **Spatial partitioning** — La détection est O(n²) ; ajouter une grille ou un BVH
-- [ ] **Sphere vs Box** — Combinaison de collider non encore implémentée
-- [ ] **Friction tangentielle** — Pas de friction dans la résolution d'impulsion
-- [ ] **Désabonnement EventBus** — Pas de mécanisme `unsubscribe`
-- [ ] **Éclairage avancé** — Specular, multiple lights, shadow mapping
-- [ ] **Centre de masse** — `calculateCenterOfMassFromMesh` retourne toujours `(0,0,0)`
