@@ -60,7 +60,7 @@ int main(int argc, char* argv[])
 	std::unique_ptr<InputManager> inputManager = std::make_unique<InputManager>(*eventBus);
 	std::unique_ptr<Window> window = std::make_unique<Window>(1920, 1080, "My Window", *inputManager);
 	World& world = World::getWorld();
-	UI ui;
+	UI ui(world, window->getGLFWWindow());
 
 	std::shared_ptr<ACamera> cameraActor = world.spawnActor<ACamera>();
 	
@@ -82,12 +82,7 @@ int main(int argc, char* argv[])
 	world.spawnActor<ATown>(renderer->getShader());
 	world.spawnActor<ACrate>(renderer->getShader());
 
-	// --- Init ImGui ---
-	IMGUI_CHECKVERSION();
-	ImGui::CreateContext();
-	ImGui_ImplGlfw_InitForOpenGL(window->getGLFWWindow(), true);
-	ImGui_ImplOpenGL3_Init("#version 330");
-	ImGui::StyleColorsDark();
+	
 
 
 	while (!window->shoudClose() && window->bIsValid)
@@ -108,15 +103,8 @@ int main(int argc, char* argv[])
 		renderer->update();
 
 		// --- ImGui frame ---
-		ImGui_ImplOpenGL3_NewFrame();
-		ImGui_ImplGlfw_NewFrame();
-		ImGui::NewFrame();
-
-		ui.DrawSceneGraphWindow(world);
-
-		ImGui::Render();
-		ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
 		
+		ui.update();
 	}
 
 	return 0;

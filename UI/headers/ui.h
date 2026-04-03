@@ -8,14 +8,17 @@
 class UI
 {
 public:
-	UI();
+	UI(World& world, GLFWwindow* window);
 	~UI();
 
 	
 	void DrawSceneGraphWindow(World& world);
+	void update();
 
 private:
 	void DrawSceneComponentTree(const std::shared_ptr<SceneComponent>& comp, int depth);
+
+	World& myWorld;
 
 };
 
