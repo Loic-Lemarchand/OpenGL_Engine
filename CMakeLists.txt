@@ -12,6 +12,8 @@ find_package(glfw3 CONFIG REQUIRED)
 find_package(glad CONFIG REQUIRED)
 find_package(glm CONFIG REQUIRED)
 find_package(assimp CONFIG REQUIRED)
+find_package(imgui CONFIG REQUIRED)
+
 
 # ---- Sources ----
 file(GLOB_RECURSE SCENE_GRAPH_SOURCES CONFIGURE_DEPENDS
@@ -34,6 +36,10 @@ file(GLOB_RECURSE HEADER_SOURCES CONFIGURE_DEPENDS
     "${CMAKE_CURRENT_SOURCE_DIR}/headers/*"
 )
 
+file(GLOB_RECURSE UI_SOURCES CONFIGURE_DEPENDS
+    "${CMAKE_CURRENT_SOURCE_DIR}/UI/*"
+)
+
 # ---- Executable ----
 add_executable(${PROJECT_NAME}
     main.cpp
@@ -42,6 +48,7 @@ add_executable(${PROJECT_NAME}
     ${SCENE_GRAPH_SOURCES}
     ${RENDER_SOURCES}
     ${PHYSICS_SOURCES}
+    ${UI_SOURCES}
 )
 
 # ---- VS groups ----
@@ -50,6 +57,7 @@ source_group(TREE ${CMAKE_CURRENT_SOURCE_DIR}/physics PREFIX "Physics" FILES ${P
 source_group(TREE ${CMAKE_CURRENT_SOURCE_DIR}/sceneGraph PREFIX "SceneGraph" FILES ${SCENE_GRAPH_SOURCES})
 source_group(TREE ${CMAKE_CURRENT_SOURCE_DIR}/src PREFIX "Src" FILES ${SRC_SOURCES})
 source_group(TREE ${CMAKE_CURRENT_SOURCE_DIR}/headers PREFIX "Headers" FILES ${HEADER_SOURCES})
+source_group(TREE ${CMAKE_CURRENT_SOURCE_DIR}/UI PREFIX "UI" FILES ${UI_SOURCES})
 
 # ---- Linking ----
 target_link_libraries(${PROJECT_NAME}
@@ -59,6 +67,7 @@ target_link_libraries(${PROJECT_NAME}
         glad::glad
         glm::glm
         assimp::assimp
+        imgui::imgui
 )
 
 # ---- Include dirs ----
@@ -76,6 +85,8 @@ target_include_directories(${PROJECT_NAME}
         ${CMAKE_CURRENT_SOURCE_DIR}/physics
         ${CMAKE_CURRENT_SOURCE_DIR}/physics/headers
         ${CMAKE_CURRENT_SOURCE_DIR}/physics/src
+        ${CMAKE_CURRENT_SOURCE_DIR}/UI/headers
+        ${CMAKE_CURRENT_SOURCE_DIR}/UI/src
 )
 
 target_compile_definitions(${PROJECT_NAME} PRIVATE

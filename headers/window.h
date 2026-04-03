@@ -16,6 +16,7 @@ public:
 
 	bool shoudClose() { return glfwWindowShouldClose(myWindow); }
 	double getGLFWTime() { return glfwGetTime(); }
+	GLFWwindow* getGLFWWindow() { return myWindow; }
 
 	int getFrameBufferWidth() { return myFrameBufferWidth; }
 	int getFrameBufferHeight() { return myFrameBufferHeight; }

@@ -6,6 +6,7 @@
 #include "camera.h"
 #include "world.h"
 #include "physicsComponent.h"
+#include "UI/headers/ui.h"
 
 
 class ATown : public Actor
@@ -59,6 +60,7 @@ int main(int argc, char* argv[])
 	std::unique_ptr<InputManager> inputManager = std::make_unique<InputManager>(*eventBus);
 	std::unique_ptr<Window> window = std::make_unique<Window>(1920, 1080, "My Window", *inputManager);
 	World& world = World::getWorld();
+	UI ui;
 
 	std::shared_ptr<ACamera> cameraActor = world.spawnActor<ACamera>();
 	
@@ -80,6 +82,13 @@ int main(int argc, char* argv[])
 	world.spawnActor<ATown>(renderer->getShader());
 	world.spawnActor<ACrate>(renderer->getShader());
 
+	// --- Init ImGui ---
+	IMGUI_CHECKVERSION();
+	ImGui::CreateContext();
+	ImGui_ImplGlfw_InitForOpenGL(window->getGLFWWindow(), true);
+	ImGui_ImplOpenGL3_Init("#version 330");
+	ImGui::StyleColorsDark();
+
 
 	while (!window->shoudClose() && window->bIsValid)
 	{
@@ -97,9 +106,16 @@ int main(int argc, char* argv[])
 
 		//RENDERER WORK HERE
 		renderer->update();
-		//renderer->update(glm::vec3(0.0f, 0.0f, -2.5f), 45, glm::vec3(0.0f, window->triOffset, 0.0f), glm::vec3(0.4f, 0.4f, 1.0f));
 
-		//PHYSICS COMPUTATION HERE
+		// --- ImGui frame ---
+		ImGui_ImplOpenGL3_NewFrame();
+		ImGui_ImplGlfw_NewFrame();
+		ImGui::NewFrame();
+
+		ui.DrawSceneGraphWindow(world);
+
+		ImGui::Render();
+		ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
 		
 	}
 
