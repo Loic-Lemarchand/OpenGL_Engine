@@ -25,8 +25,6 @@ public:
 	Actor* getOwner() { return myOwner; }
 	void setOwner(Actor* owner) { myOwner = owner; }
 
-	
-
 	bool isActive() { return bIsActive; }
 	bool isValid() { return bIsValid;  }
 	bool canRecurseTick() { return bCanRecurseTick; }
@@ -54,24 +52,29 @@ class ActorComponent : public Component
 class SceneComponent : public ActorComponent, public std::enable_shared_from_this<SceneComponent>
 {
 public:
-	SceneComponent() : myPosition(0.0f), myScale(1.0f), myRotation(0.0f), myRotationAxis(0.0f) { bCanRecurseTick = true; }
-	SceneComponent(glm::vec3 position) : myPosition(position), myScale(1.0f), myRotation(0.0f), myRotationAxis(0.0f) { bCanRecurseTick = true; }
+	SceneComponent() : myLocalPosition(0.0f), myLocalScale(1.0f), myLocalRotation(0.0f), myLocalRotationAxis(0.0f) { bCanRecurseTick = true; }
+	SceneComponent(glm::vec3 position) : myLocalPosition(position), myLocalScale(1.0f), myLocalRotation(0.0f), myLocalRotationAxis(0.0f) { bCanRecurseTick = true; }
 
-	glm::vec3 getPosition() const { return myPosition; }
-	float getRotation() const { return myRotation; }
-	glm::vec3 getScale() const { return myScale; }
-	glm::vec3 getRotationAxis() const { return myRotationAxis; }
+	glm::vec3 getLocalPosition() const { return myLocalPosition; }
+	float getLocalRotation() const { return myLocalRotation; }
+	glm::vec3 getLocalScale() const { return myLocalScale; }
+	glm::vec3 getLocalRotationAxis() const { return myLocalRotationAxis; }
 
 	std::shared_ptr<SceneComponent> getParent() const { return myParent; }
 	
-	void setPosition(glm::vec3 position) { myPosition = position; }
-	void setRotation(float rotation) { myRotation = rotation; }
-	void SetScale(glm::vec3 scale) { myScale = scale; }
-	void SetRotationAxis(glm::vec3 rotationAxis) { myRotationAxis = rotationAxis; }
-
-	void setParent(std::shared_ptr<SceneComponent> parent) { myParent = parent; }
+	void setLocalPosition(glm::vec3 position) { myLocalPosition = position; }
+	void setLocalRotation(float rotation) { myLocalRotation = rotation; }
+	void SetLocalScale(glm::vec3 scale) { myLocalScale = scale; }
+	void SetLocalRotationAxis(glm::vec3 rotationAxis) { myLocalRotationAxis = rotationAxis; }
 
 	glm::mat4 getWorldTransform() const;
+	glm::vec3 getWorldPosition() const;
+	glm::vec3 getWorldScale() const;
+
+	void setWorldPosition(glm::vec3 WorldPos);
+
+	void setParent(std::shared_ptr<SceneComponent> parent) { myParent = parent; }
+	
 
 	void AddChild(std::shared_ptr<SceneComponent> child);
 	std::vector<std::shared_ptr<SceneComponent>> getChildrenComps() const { return myChildren; }
@@ -81,10 +84,10 @@ public:
 	virtual bool getRenderProxy(RenderProxy& proxy) const { return false; }
 
 protected:
-	glm::vec3 myPosition;
-	glm::vec3 myScale;
-	float myRotation;
-	glm::vec3 myRotationAxis;
+	glm::vec3 myLocalPosition;
+	glm::vec3 myLocalScale;
+	float myLocalRotation;
+	glm::vec3 myLocalRotationAxis;
 
 	std::shared_ptr<SceneComponent> myParent;
 

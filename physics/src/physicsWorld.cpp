@@ -30,7 +30,7 @@ void PhysicsWorld::Step(float dt)
 	{
 		if (!obj->rigidBodyComponent->getColliderComponent())
 			continue;
-		obj->rigidBodyComponent->getColliderComponent()->setPosition(obj->sceneComponent->getPosition());
+		obj->rigidBodyComponent->getColliderComponent()->setWorldPosition(obj->sceneComponent->getWorldPosition());
 	}
 
 	for (auto& physicsObjectA : myPhysicsObjects)
@@ -52,7 +52,7 @@ void PhysicsWorld::Step(float dt)
 		if (!rigidBodyA.getColliderComponent())
 			continue;
 		ColliderComponent& colliderComponentA = *rigidBodyA.getColliderComponent();
-		colliderComponentA.setPosition(sceneCompA.getPosition());
+		colliderComponentA.setWorldPosition(sceneCompA.getWorldPosition());
 
 		// Detect collisions
 		for (auto& physicsObjectB : myPhysicsObjects)
@@ -83,16 +83,16 @@ void PhysicsWorld::Step(float dt)
 
 			if (rigidBodyA.getBodyType() == bodyType::Dynamic && rigidBodyB.getBodyType() == bodyType::Dynamic)
 			{
-				sceneCompA.setPosition(sceneCompA.getPosition() - correction * 0.5f);
-				sceneCompB.setPosition(sceneCompB.getPosition() + correction * 0.5f);
+				sceneCompA.setWorldPosition(sceneCompA.getWorldPosition() - correction * 0.5f);
+				sceneCompB.setWorldPosition(sceneCompB.getWorldPosition() + correction * 0.5f);
 			}
 			else if (rigidBodyA.getBodyType() != bodyType::Dynamic)
 			{
-				sceneCompB.setPosition(sceneCompB.getPosition() + correction);
+				sceneCompB.setWorldPosition(sceneCompB.getWorldPosition() + correction);
 			}
 			else if(rigidBodyB.getBodyType() != bodyType::Dynamic)
 			{
-				sceneCompA.setPosition(sceneCompA.getPosition() - correction);
+				sceneCompA.setWorldPosition(sceneCompA.getWorldPosition() - correction);
 			}
 
 

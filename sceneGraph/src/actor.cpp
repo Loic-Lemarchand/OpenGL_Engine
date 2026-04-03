@@ -3,7 +3,7 @@
 
 Actor::Actor() :
 	bIsValid(true),
-	myRootComponent(nullptr)
+	myRootComponent(std::make_shared<SceneComponent>())
 {
 }
 

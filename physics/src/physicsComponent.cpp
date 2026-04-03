@@ -51,7 +51,7 @@ void RigidBodyComponent::Integrate(float duration, std::shared_ptr<SceneComponen
 
 	// 5 - Update linear position
 	glm::vec3 movement = mySpeed * duration;
-	sceneComponent->setPosition(sceneComponent->getPosition() + movement);
+	sceneComponent->setWorldPosition(sceneComponent->getWorldPosition() + movement);
 }
 
 ColliderComponent::ColliderComponent(glm::vec3 position, ShapeType shapeType, ShapeData shapeData) :
@@ -73,7 +73,7 @@ void ColliderComponent::calculateCenterOfMassFromMesh(const MeshComponent& meshC
 
 AABB ColliderComponent::getAABB() const
 {
-	glm::vec3 worldCenter = getPosition() + myCenterOfMass;
+	glm::vec3 worldCenter = getWorldPosition() + myCenterOfMass;
 	AABB aabb;
 	switch (myShapeType)
 	{
@@ -126,8 +126,8 @@ CollisionManyFold ColliderComponent::checkCollision(const ColliderComponent& oth
 	// --- Sphere vs Sphere ---
 	if (myShapeType == ShapeType::Sphere && other.getShapeType() == ShapeType::Sphere)
 	{
-		glm::vec3 centerA = getPosition() + myCenterOfMass;
-		glm::vec3 centerB = other.getPosition() + other.myCenterOfMass;
+		glm::vec3 centerA = getWorldPosition() + myCenterOfMass;
+		glm::vec3 centerB = other.getWorldPosition() + other.myCenterOfMass;
 		float radiusA = getShapeData<SphereShape>().radius;
 		float radiusB = other.getShapeData<SphereShape>().radius;
 
@@ -146,8 +146,8 @@ CollisionManyFold ColliderComponent::checkCollision(const ColliderComponent& oth
 	// --- Box vs Box ---
 	else if (myShapeType == ShapeType::Box && other.getShapeType() == ShapeType::Box)
 	{
-		glm::vec3 centerA = getPosition() + myCenterOfMass;
-		glm::vec3 centerB = other.getPosition() + other.myCenterOfMass;
+		glm::vec3 centerA = getWorldPosition() + myCenterOfMass;
+		glm::vec3 centerB = other.getWorldPosition() + other.myCenterOfMass;
 		glm::vec3 halfA = getShapeData<BoxShape>().halfExtents;
 		glm::vec3 halfB = other.getShapeData<BoxShape>().halfExtents;
 
@@ -187,7 +187,7 @@ CollisionManyFold ColliderComponent::checkCollision(const ColliderComponent& oth
 
 		glm::vec3 planeNormal = plane.getShapeData<PlaneShape>().normal;
 		float planeOffset     = plane.getShapeData<PlaneShape>().offset;
-		glm::vec3 sphereCenter = sphere.getPosition() + sphere.myCenterOfMass;
+		glm::vec3 sphereCenter = sphere.getWorldPosition() + sphere.myCenterOfMass;
 		float sphereRadius     = sphere.getShapeData<SphereShape>().radius;
 
 		float dist = glm::dot(sphereCenter, planeNormal) - planeOffset;
@@ -209,7 +209,7 @@ CollisionManyFold ColliderComponent::checkCollision(const ColliderComponent& oth
 
 		glm::vec3 planeNormal = plane.getShapeData<PlaneShape>().normal;
 		float planeOffset     = plane.getShapeData<PlaneShape>().offset;
-		glm::vec3 boxCenter   = box.getPosition() + box.myCenterOfMass;
+		glm::vec3 boxCenter   = box.getWorldPosition() + box.myCenterOfMass;
 		glm::vec3 halfExtents = box.getShapeData<BoxShape>().halfExtents;
 
 		// Project half-extents onto plane normal to find effective radius

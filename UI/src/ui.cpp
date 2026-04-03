@@ -28,7 +28,7 @@ void UI::DrawSceneComponentTree(const std::shared_ptr<SceneComponent>& comp, int
 
 	// Affiche le type via typeid (nom démanglé simplifié)
 	const char* typeName = typeid(*comp).name();
-	glm::vec3 pos = comp->getPosition();
+	glm::vec3 pos = comp->getWorldPosition();
 
 	bool open = ImGui::TreeNodeEx(
 		(void*)(intptr_t)depth,

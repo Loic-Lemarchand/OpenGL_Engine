@@ -47,22 +47,22 @@ void Camera::update()
 		switch (key)
 		{
 			case GLFW_KEY_W:
-				myPosition += cameraSpeed * front;
+				setWorldPosition(getWorldPosition() + cameraSpeed * front);
 				break;
 			case GLFW_KEY_A:
-				myPosition -= cameraSpeed * right;
+				setWorldPosition(getWorldPosition() - cameraSpeed * right);
 				break;
 			case GLFW_KEY_S:
-				myPosition -= cameraSpeed * front;
+				setWorldPosition(getWorldPosition() - cameraSpeed * front);
 				break;
 			case GLFW_KEY_D:
-				myPosition += cameraSpeed * right;
+				setWorldPosition(getWorldPosition() + cameraSpeed * right);
 				break;
 			case GLFW_KEY_E:
-				myPosition += cameraSpeed * up;
+				setWorldPosition(getWorldPosition() + cameraSpeed * up);
 				break;
 			case GLFW_KEY_Q:
-				myPosition -= cameraSpeed * up;
+				setWorldPosition(getWorldPosition() - cameraSpeed * up);
 				break;
 			default:
 				break;
@@ -74,7 +74,7 @@ void Camera::update()
 
 glm::mat4 Camera::CalculateViewMatrix()
 {
-	viewMatrix = glm::lookAt(myPosition, myPosition + front, up);
+	viewMatrix = glm::lookAt(getWorldPosition(), getWorldPosition() + front, up);
 	return viewMatrix;
 }
 
@@ -82,7 +82,7 @@ glm::mat4 Camera::CalculateViewMatrix()
 void Camera::onKeyBoardInput(int key)
 {
 	keysDown.insert(key);
-	utilities::log("Camera position is : x = " + std::to_string(myPosition.x) + " y = " + std::to_string(myPosition.y) + " z = " + std::to_string(myPosition.z));
+	utilities::log("Camera position is : x = " + std::to_string(getWorldPosition().x) + " y = " + std::to_string(getWorldPosition().y) + " z = " + std::to_string(getWorldPosition().z));
 }
 
 void Camera::onKeyBoardRelease(int key)

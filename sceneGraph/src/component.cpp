@@ -35,18 +35,45 @@ void SceneComponent::Tick()
 glm::mat4 SceneComponent::getWorldTransform() const
 {
 	glm::mat4 local = glm::mat4(1.0f);
-	local = glm::translate(local, myPosition);
-	if (myRotation != 0.0f && glm::length(myRotationAxis) > 0.0f)
+	local = glm::translate(local, myLocalPosition);
+	if (myLocalRotation != 0.0f && glm::length(myLocalRotationAxis) > 0.0f)
 	{
-		local = glm::rotate(local, glm::radians(myRotation), myRotationAxis);
+		local = glm::rotate(local, glm::radians(myLocalRotation), myLocalRotationAxis);
 	}
-	local = glm::scale(local, myScale);
+	local = glm::scale(local, myLocalScale);
 
 	if (myParent)
 	{
 		return myParent->getWorldTransform() * local;
 	}
 	return local;
+}
+
+glm::vec3 SceneComponent::getWorldPosition() const
+{
+	return glm::vec3(getWorldTransform()[3]);
+}
+
+glm::vec3 SceneComponent::getWorldScale() const
+{
+	glm::mat4 world = getWorldTransform();
+	float scalex = glm::length(glm::vec3(world[0]));
+	float scaley = glm::length(glm::vec3(world[1]));
+	float scalez = glm::length(glm::vec3(world[2]));
+	return glm::vec3(scalex, scaley, scalez);
+}
+
+void SceneComponent::setWorldPosition(glm::vec3 WorldPos)
+{
+	if (myParent)
+	{
+		glm::mat4 parentWorldInv = glm::inverse(myParent->getWorldTransform());
+		myLocalPosition = glm::vec3(parentWorldInv * glm::vec4(WorldPos, 1.0f));
+	}
+	else
+	{
+		myLocalPosition = WorldPos;
+	}
 }
 
 void SceneComponent::AddChild(std::shared_ptr<SceneComponent> child)
@@ -70,10 +97,10 @@ void MeshComponent::loadModelFromFile(const std::string& modelPath, std::shared_
 {
 	myModel = std::make_unique<Model>();
 	myModel->Load(modelPath, shader);
-	myModel->position = myPosition;
-	myModel->scale = myScale;
-	myModel->rotation = myRotation;
-	myModel->rotationAxis = myRotationAxis;
+	myModel->position = myLocalPosition;
+	myModel->scale = myLocalScale;
+	myModel->rotation = myLocalRotation;
+	myModel->rotationAxis = myLocalRotationAxis;
 	bIsActive = true;
 }
 

@@ -23,7 +23,7 @@ Light::~Light()
 PointLight::PointLight(glm::vec3 color, float intensity, glm::vec3 position) :
 	Light(color, intensity)
 {
-	myPosition = position;
+	setWorldPosition(position);
 }
 
 PointLight::~PointLight()
@@ -51,7 +51,7 @@ void PointLight::applyUniforms(std::shared_ptr<Shader> shader, int index)
 
 void PointLight::update()
 {
-	glUniform3f(myUniformDiffuseLightPosition, myPosition.x, myPosition.y, myPosition.z);
+	glUniform3f(myUniformDiffuseLightPosition, getWorldPosition().x, getWorldPosition().y, getWorldPosition().z);
 	glUniform3f(myUniformDiffuseLightColor, myColor.x, myColor.y, myColor.z);
 	glUniform1f(myUniformDiffuseLightIntensity, myIntensity);
 }
